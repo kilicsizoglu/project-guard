@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 mod core;
 mod db;
 mod engines;
@@ -21,6 +23,38 @@ use engines::{ClamAvEngine, HashEngine, HeuristicEngine, ProcessScanner, ScanEng
 use feeds::FeedUpdater;
 use monitor::RealTimeMonitor;
 use quarantine::QuarantineManager;
+
+#[cfg(windows)]
+pub fn hide_console() {
+    unsafe {
+        unsafe extern "system" {
+            fn GetConsoleWindow() -> *mut std::ffi::c_void;
+            fn ShowWindow(hWnd: *mut std::ffi::c_void, nCmdShow: i32) -> i32;
+            fn FreeConsole() -> i32;
+        }
+        let hwnd = GetConsoleWindow();
+        if !hwnd.is_null() {
+            ShowWindow(hwnd, 0); // 0 = SW_HIDE
+            FreeConsole();
+        }
+    }
+}
+
+#[cfg(not(windows))]
+pub fn hide_console() {}
+
+#[cfg(windows)]
+pub fn attach_console_for_cli() {
+    unsafe {
+        unsafe extern "system" {
+            fn AttachConsole(dwProcessId: u32) -> i32;
+        }
+        AttachConsole(0xFFFFFFFF); // ATTACH_PARENT_PROCESS
+    }
+}
+
+#[cfg(not(windows))]
+pub fn attach_console_for_cli() {}
 
 #[derive(Parser)]
 #[command(
@@ -306,9 +340,19 @@ fn print_banner() {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    let command = cli.command.unwrap_or(Commands::Gui { port: 7890 });
+
+    match &command {
+        Commands::Gui { .. } => {
+            hide_console();
+        }
+        _ => {
+            attach_console_for_cli();
+        }
+    }
+
     let (db_path, quarantine_dir, rules_dir) = get_project_dirs()?;
     let db = Arc::new(Mutex::new(DbStore::new(&db_path)?));
-    let command = cli.command.unwrap_or(Commands::Gui { port: 7890 });
 
     match command {
         Commands::Scan {
@@ -1098,9 +1142,29 @@ fn main() -> Result<()> {
             }
         }
 
-        Commands::Ui { port } | Commands::Gui { port } => {
+        Commands::Ui { port } => {
+            attach_console_for_cli();
             print_banner();
-            println!("{}", "PROJECT GUARD WINDOWS MASAUSTU KONTROL MERKEZI BASLATILIYOR...".green().bold());
+            println!("{}", "PROJECT GUARD WEB SOC KONTROL MERKEZI BASLATILIYOR...".green().bold());
+            println!("Yerel Baglanti: http://127.0.0.1:{}", port);
+            let (orchestrator, q_mgr, _, yara_eng) = build_orchestrator(Arc::clone(&db), quarantine_dir, rules_dir.clone())?;
+            let base_dir = dirs_base();
+            let state = ui::AppState {
+                db: Arc::clone(&db),
+                orchestrator: Arc::new(orchestrator),
+                quarantine_mgr: q_mgr,
+                canary_mgr: Arc::new(engines::CanaryManager::new(&base_dir)),
+                yara_engine: yara_eng,
+                rules_dir,
+                base_dir,
+            };
+
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(ui::start_web_ui(state, port))?;
+        }
+
+        Commands::Gui { port } => {
+            hide_console();
             let (orchestrator, q_mgr, _, yara_eng) = build_orchestrator(Arc::clone(&db), quarantine_dir, rules_dir.clone())?;
             let base_dir = dirs_base();
             let state = ui::AppState {

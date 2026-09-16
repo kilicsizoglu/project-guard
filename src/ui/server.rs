@@ -140,7 +140,7 @@ fn launch_desktop_app_window(url: &str) {
         ];
         for edge in edge_paths {
             if std::path::Path::new(edge).exists() {
-                if let Ok(_) = std::process::Command::new(edge)
+                if let Ok(mut child) = std::process::Command::new(edge)
                     .args([
                         &format!("--app={}", url),
                         "--window-size=1360,860",
@@ -151,6 +151,10 @@ fn launch_desktop_app_window(url: &str) {
                     ])
                     .spawn()
                 {
+                    std::thread::spawn(move || {
+                        let _ = child.wait();
+                        std::process::exit(0);
+                    });
                     return;
                 }
             }
@@ -163,7 +167,7 @@ fn launch_desktop_app_window(url: &str) {
         ];
         for chrome in chrome_paths {
             if std::path::Path::new(chrome).exists() {
-                if let Ok(_) = std::process::Command::new(chrome)
+                if let Ok(mut child) = std::process::Command::new(chrome)
                     .args([
                         &format!("--app={}", url),
                         "--window-size=1360,860",
@@ -174,15 +178,24 @@ fn launch_desktop_app_window(url: &str) {
                     ])
                     .spawn()
                 {
+                    std::thread::spawn(move || {
+                        let _ = child.wait();
+                        std::process::exit(0);
+                    });
                     return;
                 }
             }
         }
 
         // 3. Fallback: Varsayılan tarayıcı
-        let _ = std::process::Command::new("cmd")
-            .args(["/C", "start", url])
-            .spawn();
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            let _ = std::process::Command::new("cmd")
+                .args(["/C", "start", url])
+                .creation_flags(0x08000000) // CREATE_NO_WINDOW
+                .spawn();
+        }
     }
     #[cfg(not(windows))]
     {
