@@ -8,6 +8,25 @@ use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
+use std::ffi::OsString;
+use std::sync::mpsc;
+
+#[cfg(windows)]
+use windows_service::{
+    define_windows_service,
+    service::{
+        ServiceControl, ServiceControlAccept, ServiceExitCode, ServiceState, ServiceStatus,
+        ServiceType,
+    },
+    service_control_handler::{self, ServiceControlHandlerResult},
+    service_dispatcher,
+};
+
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+/// CREATE_NO_WINDOW: GUI uygulamasından konsol process spawn edilince siyah pencere çıkmasını engeller
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 pub const SERVICE_NAME: &str = "ProjectGuard";
 pub const SERVICE_DISPLAY_NAME: &str = "Project Guard Autonomous EDR & Threat Hunter";
@@ -37,17 +56,22 @@ impl WindowsServiceManager {
         println!("{}", format!("[*] '{}' Windows Hizmeti kuruluyor...", SERVICE_NAME).cyan().bold());
         println!("    Calistirilabilir Yol: {}", bin_path_arg.yellow());
 
-        // sc.exe create ProjectGuard binPath= "..." start= auto DisplayName= "..."
-        let output = Command::new("sc.exe")
+        // PowerShell kullanarak servisi kur
+        // sc.exe argüman parse sorunlarını aşmak için New-Service kullanıyoruz.
+        let output = Command::new("powershell")
             .args([
-                "create",
-                SERVICE_NAME,
-                &format!("binPath= {}", bin_path_arg),
-                "start= auto",
-                &format!("DisplayName= {}", SERVICE_DISPLAY_NAME),
+                "-NoProfile",
+                "-WindowStyle",
+                "Hidden",
+                "-Command",
+                &format!(
+                    "New-Service -Name '{}' -BinaryPathName '{}' -DisplayName '{}' -StartupType Automatic -ErrorAction Stop",
+                    SERVICE_NAME, bin_path_arg.replace("'", "''"), SERVICE_DISPLAY_NAME
+                ),
             ])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
-            .context("sc.exe calistirilamadi (Yonetici yetkisi gereklidir)")?;
+            .context("powershell calistirilamadi (Yonetici yetkisi gereklidir)")?;
 
         if !output.status.success() {
             let err_msg = String::from_utf8_lossy(&output.stderr);
@@ -58,9 +82,9 @@ impl WindowsServiceManager {
         // Açıklama ayarla: sc.exe description ProjectGuard "..."
         let _ = Command::new("sc.exe")
             .args(["description", SERVICE_NAME, SERVICE_DESCRIPTION])
+            .creation_flags(CREATE_NO_WINDOW)
             .output();
 
-        // Kurtarma ayarları: Başarısız olursa servisi yeniden başlat (sc.exe failure ProjectGuard reset= 86400 actions= restart/60000/restart/60000/none/0)
         let _ = Command::new("sc.exe")
             .args([
                 "failure",
@@ -68,6 +92,7 @@ impl WindowsServiceManager {
                 "reset= 86400",
                 "actions= restart/5000/restart/10000/restart/20000",
             ])
+            .creation_flags(CREATE_NO_WINDOW)
             .output();
 
         println!("{}", "[+] Basarili: Project Guard Windows Hizmeti sisteme basariyla kaydedildi!".green().bold());
@@ -80,11 +105,12 @@ impl WindowsServiceManager {
         println!("{}", format!("[*] '{}' Windows Hizmeti kaldiriliyor...", SERVICE_NAME).cyan().bold());
 
         // Once servisi durdur
-        let _ = Command::new("sc.exe").args(["stop", SERVICE_NAME]).output();
+        let _ = Command::new("sc.exe").args(["stop", SERVICE_NAME]).creation_flags(CREATE_NO_WINDOW).output();
         std::thread::sleep(Duration::from_millis(500));
 
         let output = Command::new("sc.exe")
             .args(["delete", SERVICE_NAME])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
             .context("sc.exe delete calistirilamadi (Yonetici yetkisi gereklidir)")?;
 
@@ -100,11 +126,20 @@ impl WindowsServiceManager {
 
     /// Windows Hizmetini baslatir (Start)
     pub fn start_service() -> Result<()> {
-        println!("{}", format!("[*] '{}' servisi baslatiliyor...", SERVICE_NAME).cyan());
-        let output = Command::new("sc.exe")
-            .args(["start", SERVICE_NAME])
+        println!("{}", format!("[*] '{}' Windows Hizmeti baslatiliyor...", SERVICE_NAME).cyan().bold());
+
+        // Normal kullanicidan UAC (Yonetici Izni) isteyebilmek icin PowerShell Start-Process kullaniliyor
+        let output = Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-WindowStyle",
+                "Hidden",
+                "-Command",
+                &format!("Start-Process sc.exe -ArgumentList 'start {}' -Verb RunAs -WindowStyle Hidden -Wait", SERVICE_NAME)
+            ])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
-            .context("sc.exe start calistirilamadi")?;
+            .context("powershell calistirilamadi")?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         if output.status.success() || stdout.contains("RUNNING") || stdout.contains("START_PENDING") {
@@ -118,11 +153,20 @@ impl WindowsServiceManager {
 
     /// Windows Hizmetini durdurur (Stop)
     pub fn stop_service() -> Result<()> {
-        println!("{}", format!("[*] '{}' servisi durduruluyor...", SERVICE_NAME).cyan());
-        let output = Command::new("sc.exe")
-            .args(["stop", SERVICE_NAME])
+        println!("{}", format!("[*] '{}' Windows Hizmeti durduruluyor...", SERVICE_NAME).cyan().bold());
+
+        // Normal kullanicidan UAC (Yonetici Izni) isteyebilmek icin PowerShell Start-Process kullaniliyor
+        let output = Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-WindowStyle",
+                "Hidden",
+                "-Command",
+                &format!("Start-Process sc.exe -ArgumentList 'stop {}' -Verb RunAs -WindowStyle Hidden -Wait", SERVICE_NAME)
+            ])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
-            .context("sc.exe stop calistirilamadi")?;
+            .context("powershell calistirilamadi")?;
 
         if output.status.success() {
             println!("{}", "[+] Servis durdurma istegi basariyla iletildi.".green().bold());
@@ -138,6 +182,7 @@ impl WindowsServiceManager {
     pub fn query_status() -> Result<ServiceStatusInfo> {
         let output = Command::new("sc.exe")
             .args(["query", SERVICE_NAME])
+            .creation_flags(CREATE_NO_WINDOW)
             .output();
 
         match output {
@@ -172,16 +217,15 @@ impl WindowsServiceManager {
     }
 
     /// Hizmet arka plan daemon dongusu (24/7 EDR & RTP koruma motoru)
-    pub fn run_service_daemon(log_dir: &Path) -> Result<()> {
+    pub fn run_service_daemon(log_dir: &Path, running: Arc<AtomicBool>) -> Result<()> {
         let log_file = log_dir.join("service.log");
         let _ = fs::create_dir_all(log_dir);
 
         Self::log_service_event(&log_file, "PROJECT GUARD WINDOWS SERVISI BASLATILDI (24/7 EDR ACTIVE)");
 
-        let running = Arc::new(AtomicBool::new(true));
         let r = running.clone();
 
-        // Ctrl+C veya sonlandirma sinyali dinleyicisi
+        // Ctrl+C veya sonlandirma sinyali dinleyicisi (Sadece konsol icin, servis modunda tetiklenmez)
         ctrlc_like_handler(move || {
             r.store(false, Ordering::SeqCst);
         });
@@ -213,11 +257,11 @@ impl WindowsServiceManager {
 
         let mut loop_count: u64 = 0;
         while running.load(Ordering::SeqCst) {
-            std::thread::sleep(Duration::from_secs(10));
+            std::thread::sleep(Duration::from_secs(5));
             loop_count += 1;
 
             // Her 60 saniyede bir canlilik heartbeat kaydi
-            if loop_count % 6 == 0 {
+            if loop_count % 12 == 0 {
                 Self::log_service_event(&log_file, "HEARTBEAT: EDR Servis motoru saglikli, sistem korunuyor.");
             }
         }
@@ -233,6 +277,74 @@ impl WindowsServiceManager {
             let _ = file.write_all(log_line.as_bytes());
         }
     }
+}
+
+#[cfg(windows)]
+define_windows_service!(ffi_service_main, project_guard_service_main);
+
+#[cfg(windows)]
+pub fn run_windows_service() -> Result<()> {
+    service_dispatcher::start(SERVICE_NAME, ffi_service_main)
+        .context("Service dispatcher baslatilamadi (Windows tarafindan tetiklenmemis olabilir)")?;
+    Ok(())
+}
+
+#[cfg(not(windows))]
+pub fn run_windows_service() -> Result<()> {
+    anyhow::bail!("Desteklenmiyor");
+}
+
+#[cfg(windows)]
+fn project_guard_service_main(arguments: Vec<OsString>) {
+    if let Err(_e) = run_service_main(arguments) {
+        // Hata durumunda event log veya debug output yazilabilir
+    }
+}
+
+#[cfg(windows)]
+fn run_service_main(_arguments: Vec<OsString>) -> Result<()> {
+    let (stop_tx, stop_rx) = mpsc::channel();
+    let running = Arc::new(AtomicBool::new(true));
+    let r = running.clone();
+
+    let event_handler = move |control_event| -> ServiceControlHandlerResult {
+        match control_event {
+            ServiceControl::Stop | ServiceControl::Interrogate => {
+                let _ = stop_tx.send(());
+                r.store(false, Ordering::SeqCst);
+                ServiceControlHandlerResult::NoError
+            }
+            _ => ServiceControlHandlerResult::NotImplemented,
+        }
+    };
+
+    let status_handle = service_control_handler::register(SERVICE_NAME, event_handler)?;
+
+    let next_status = ServiceStatus {
+        service_type: ServiceType::OWN_PROCESS,
+        current_state: ServiceState::Running,
+        controls_accepted: ServiceControlAccept::STOP,
+        exit_code: ServiceExitCode::Win32(0),
+        checkpoint: 0,
+        wait_hint: Duration::default(),
+        process_id: None,
+    };
+    status_handle.set_service_status(next_status)?;
+
+    let log_dir = std::path::PathBuf::from(r"C:\ProgramData\ProjectGuard\logs");
+    let _ = WindowsServiceManager::run_service_daemon(&log_dir, running);
+
+    let stop_status = ServiceStatus {
+        service_type: ServiceType::OWN_PROCESS,
+        current_state: ServiceState::Stopped,
+        controls_accepted: ServiceControlAccept::empty(),
+        exit_code: ServiceExitCode::Win32(0),
+        checkpoint: 0,
+        wait_hint: Duration::default(),
+        process_id: None,
+    };
+    status_handle.set_service_status(stop_status)?;
+    Ok(())
 }
 
 fn ctrlc_like_handler<F>(_f: F)

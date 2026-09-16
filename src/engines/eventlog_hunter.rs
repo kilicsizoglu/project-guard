@@ -3,6 +3,12 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventLogRecord {
     pub record_id: String,
@@ -166,9 +172,11 @@ impl EventLogHunter {
     }
 
     fn query_winevent_ps(ps_cmd: &str, log_name: &str, source: &str) -> Result<Vec<EventLogRecord>> {
-        let output = Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command", ps_cmd])
-            .output();
+        let mut cmd = Command::new("powershell");
+        cmd.args(["-NoProfile", "-NonInteractive", "-Command", ps_cmd]);
+        #[cfg(windows)]
+        cmd.creation_flags(CREATE_NO_WINDOW);
+        let output = cmd.output();
 
         let mut records = Vec::new();
         let out = match output {

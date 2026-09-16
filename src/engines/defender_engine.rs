@@ -3,6 +3,12 @@ use anyhow::Result;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+
 pub struct WindowsDefenderEngine {
     mpcmdrun_path: Option<PathBuf>,
 }
@@ -71,14 +77,16 @@ impl ScanEngine for WindowsDefenderEngine {
         // Return code:
         // 0: Temiz
         // 2: Tehdit bulundu veya hata
-        let output = Command::new(exe)
-            .arg("-Scan")
+        let mut cmd = Command::new(exe);
+        cmd.arg("-Scan")
             .arg("-ScanType")
             .arg("3")
             .arg("-File")
             .arg(path)
-            .arg("-DisableRemediation")
-            .output();
+            .arg("-DisableRemediation");
+        #[cfg(windows)]
+        cmd.creation_flags(CREATE_NO_WINDOW);
+        let output = cmd.output();
 
         if let Ok(out) = output {
             let stdout = String::from_utf8_lossy(&out.stdout);

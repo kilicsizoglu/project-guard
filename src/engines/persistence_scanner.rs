@@ -5,6 +5,12 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+
 use crate::core::ScanOrchestrator;
 use crate::db::DbStore;
 use crate::engines::behavior_engine::BehaviorEngine;
@@ -58,9 +64,11 @@ impl PersistenceScanner {
         ];
 
         for (loc_name, key_path) in reg_targets {
-            let output = Command::new("reg")
-                .args(["query", key_path])
-                .output();
+            let mut cmd = Command::new("reg");
+            cmd.args(["query", key_path]);
+            #[cfg(windows)]
+            cmd.creation_flags(CREATE_NO_WINDOW);
+            let output = cmd.output();
 
             if let Ok(out) = output {
                 let stdout = String::from_utf8_lossy(&out.stdout);
@@ -124,9 +132,11 @@ impl PersistenceScanner {
     }
 
     fn scan_scheduled_tasks(&self, entries: &mut Vec<PersistenceEntry>) {
-        let output = Command::new("schtasks")
-            .args(["/query", "/fo", "CSV", "/v"])
-            .output();
+        let mut cmd = Command::new("schtasks");
+        cmd.args(["/query", "/fo", "CSV", "/v"]);
+        #[cfg(windows)]
+        cmd.creation_flags(CREATE_NO_WINDOW);
+        let output = cmd.output();
 
         if let Ok(out) = output {
             let stdout = String::from_utf8_lossy(&out.stdout);

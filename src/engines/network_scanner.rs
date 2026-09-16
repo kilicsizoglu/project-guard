@@ -5,6 +5,10 @@ use serde::{Deserialize, Serialize};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 use sysinfo::{Pid, System};
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NetworkConnectionInfo {
@@ -34,6 +38,7 @@ impl NetworkThreatHunter {
 
         let output = Command::new("netstat")
             .args(["-ano", "-p", "tcp"])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);

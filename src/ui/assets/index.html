@@ -718,7 +718,12 @@
                             </div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;" id="svc-btn-group">
+                        <!-- Servis kurulu DEĞİLSE göster -->
+                        <button class="btn" style="padding: 6px 16px; font-size: 12px; background: linear-gradient(135deg, #f59e0b, #d97706); display:none;" onclick="installWindowsService()" id="btn-svc-install">
+                            <span>⬇</span> <span data-i18n="btn_service_install">Servis Kur &amp; Başlat</span>
+                        </button>
+                        <!-- Servis kuruluysa göster -->
                         <button class="btn" style="padding: 6px 14px; font-size: 12px; background: linear-gradient(135deg, var(--emerald), #059669);" onclick="startWindowsService()" id="btn-svc-start">
                             <span>&#9654;</span> <span data-i18n="btn_service_start">Hizmeti Başlat</span>
                         </button>
@@ -1802,6 +1807,10 @@
                 svc_status_updated: "Windows Service status updated: ",
                 svc_started_ok: "Project Guard Service started successfully!",
                 svc_stopped_ok: "Project Guard Service stopped.",
+                svc_installing: "Installing Windows Service... UAC permission dialog may appear.",
+                svc_install_ok: "Windows Service installed and started successfully! 24/7 protection is now active.",
+                svc_install_fail: "Service installation failed: ",
+                btn_service_install: "Install Service & Start",
                 btn_exit: "Exit App"
             }
         };
@@ -3127,20 +3136,39 @@ IEX $client.DownloadString($url)`;
                 const res = await fetch('/api/service/status');
                 const st = await res.json();
                 const pill = document.getElementById('svc-status-pill');
+                const btnInstall = document.getElementById('btn-svc-install');
+                const btnStart   = document.getElementById('btn-svc-start');
+                const btnStop    = document.getElementById('btn-svc-stop');
+
                 if (st.is_installed) {
+                    // Servis kurulu: Kur butonunu gizle, Başlat/Durdur göster
+                    if (btnInstall) btnInstall.style.display = 'none';
+                    if (btnStart)   btnStart.style.display = '';
+                    if (btnStop)    btnStop.style.display = '';
+
                     if (st.state === 'RUNNING') {
                         pill.className = 'pill pill-clean';
                         pill.innerText = t('svc_status_running');
                         pill.style.color = 'var(--emerald)';
+                        if (btnStart) btnStart.disabled = true;
+                        if (btnStop)  btnStop.disabled = false;
                     } else if (st.state === 'STOPPED') {
                         pill.className = 'pill pill-warning';
                         pill.innerText = t('svc_status_stopped');
                         pill.style.color = 'var(--amber)';
+                        if (btnStart) btnStart.disabled = false;
+                        if (btnStop)  btnStop.disabled = true;
                     } else {
                         pill.className = 'pill';
                         pill.innerText = st.state;
+                        if (btnStart) btnStart.disabled = false;
+                        if (btnStop)  btnStop.disabled = false;
                     }
                 } else {
+                    // Servis KURULU DEĞİL: Kur butonunu göster, diğerlerini gizle
+                    if (btnInstall) btnInstall.style.display = '';
+                    if (btnStart)   btnStart.style.display = 'none';
+                    if (btnStop)    btnStop.style.display = 'none';
                     pill.className = 'pill pill-threat';
                     pill.innerText = t('svc_status_not_installed');
                     pill.style.color = 'var(--rose)';
@@ -3179,6 +3207,41 @@ IEX $client.DownloadString($url)`;
                 }
             } catch (e) {
                 alert('Hizmet durdurma hatası: ' + e);
+            }
+        }
+
+        async function installWindowsService() {
+            const confirmMsg = currentLang === 'tr'
+                ? 'Windows Yönetici (UAC) izin penceresi açılacak. Devam etmek istiyor musunuz?'
+                : 'A Windows Administrator (UAC) permission dialog will appear. Do you want to continue?';
+            if (!confirm(confirmMsg)) return;
+
+            const btn = document.getElementById('btn-svc-install');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳</span> <span data-i18n="svc_installing">' + t('svc_installing') + '</span>';
+            }
+            showToast(t('svc_installing'));
+
+            try {
+                const res = await fetch('/api/service/install', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(t('svc_install_ok'));
+                    await loadServiceStatus(false);
+                } else {
+                    alert(t('svc_install_fail') + (data.error || 'Bilinmeyen hata'));
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span>⬇</span> ' + t('btn_service_install');
+                    }
+                }
+            } catch (e) {
+                alert(t('svc_install_fail') + e);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>⬇</span> ' + t('btn_service_install');
+                }
             }
         }
 

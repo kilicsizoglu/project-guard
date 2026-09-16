@@ -1,6 +1,10 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DefenderStatusInfo {
@@ -46,6 +50,7 @@ impl DefenderStatusAuditor {
 
         let output = Command::new("powershell")
             .args(["-NoProfile", "-Command", ps_cmd])
+            .creation_flags(CREATE_NO_WINDOW)
             .output();
 
         match output {

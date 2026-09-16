@@ -215,6 +215,31 @@ namespace ProjectGuard.Installer
             progressBar.Value = Math.Min(100, Math.Max(0, progress));
         }
 
+        /// <summary>
+        /// sc.exe komutunu yönetici yetkisiyle çalıştıran yardımcı metot
+        /// </summary>
+        private static void RunSc(string arguments, int timeoutMs = 5000)
+        {
+            try
+            {
+                using (Process proc = new Process())
+                {
+                    proc.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "sc.exe",
+                        Arguments = arguments,
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    };
+                    proc.Start();
+                    proc.WaitForExit(timeoutMs);
+                }
+            }
+            catch { }
+        }
+
         private void BtnInstall_Click(object sender, EventArgs e)
         {
             btnInstall.Enabled = false;
@@ -428,24 +453,33 @@ namespace ProjectGuard.Installer
             // Service registration
             if (enableService && File.Exists(exePath))
             {
-                SetStatus("7/24 Windows Arka Plan Hizmeti kuruluyor...", 88);
+                SetStatus("7/24 Windows Arka Plan Hizmeti kuruluyor...", 85);
                 try
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = exePath,
-                        Arguments = "service install",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    }).WaitForExit(10000);
+                    // Önce mevcut servisi durdur ve kaldır (temiz kurulum için)
+                    RunSc("stop ProjectGuard", 5000);
+                    Thread.Sleep(1000);
+                    RunSc("delete ProjectGuard", 3000);
+                    Thread.Sleep(500);
 
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = exePath,
-                        Arguments = "service start",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    }).WaitForExit(10000);
+                    SetStatus("Windows Hizmeti kaydediliyor (sc.exe create)...", 88);
+
+                    // Servisi sc.exe ile dogrudan olustur
+                    RunSc(
+                        "create ProjectGuard binPath= \"\\\"" + exePath + "\\\" service run\" " +
+                        "start= auto DisplayName= \"Project Guard EDR & Antivirus\"",
+                        8000
+                    );
+                    Thread.Sleep(500);
+
+                    // Servis açıklaması ekle
+                    RunSc("description ProjectGuard \"7/24 Gercek Zamanli Koruma, YARA Tarama ve Fidye Yazilimi Kapani (EDR & Antivirus)\"", 3000);
+
+                    // Hata kurtarma: servis crashlarsa otomatik yeniden başlat
+                    RunSc("failure ProjectGuard reset= 86400 actions= restart/5000/restart/10000/restart/30000", 3000);
+
+                    SetStatus("Windows Hizmeti baslatiliyor...", 92);
+                    RunSc("start ProjectGuard", 10000);
                 }
                 catch { }
             }
@@ -456,10 +490,12 @@ namespace ProjectGuard.Installer
             {
                 MessageBox.Show(
                     "Project Guard sisteminize basariyla kuruldu!\n\n" +
-                    "• Kurulum Yolu : " + targetDir + "\n" +
-                    "• Masaustu Simgesi : Olusturuldu\n" +
-                    "• Windows Hizmeti  : " + (enableService ? "Aktif (7/24 Calisiyor)" : "Atlandi") + "\n" +
-                    "• Web SOC Paneli   : http://127.0.0.1:7890",
+                    "Kurulum Yolu : " + targetDir + "\n" +
+                    "Masaustu Simgesi : Olusturuldu\n" +
+                    "Windows Hizmeti  : " + (enableService ? "Kuruldu ve baslatildi (7/24 AKTIF)" : "Atlandi") + "\n" +
+                    "Web SOC Paneli   : http://127.0.0.1:7890\n\n" +
+                    (enableService ? "\u2705 7/24 koruma aktif! Servis arka planda calismaya devam ediyor.\n" : "") +
+                    "Masaustu simgesine cift tiklayarak kontrol panelini acabilirsiniz.",
                     "Kurulum Tamamlandi",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information

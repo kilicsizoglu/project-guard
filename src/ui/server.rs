@@ -109,6 +109,7 @@ pub async fn start_web_ui(state: AppState, port: u16) -> Result<()> {
         .route("/api/triage", post(handle_pe_triage))
         .route("/api/yara/sync", post(handle_yara_sync))
         .route("/api/service/status", get(handle_service_status))
+        .route("/api/service/install", post(handle_service_install))
         .route("/api/service/start", post(handle_service_start))
         .route("/api/service/stop", post(handle_service_stop))
         .route("/favicon.ico", get(handle_favicon))
@@ -144,9 +145,6 @@ pub async fn start_web_ui(state: AppState, port: u16) -> Result<()> {
 fn launch_desktop_app_window(url: &str) {
     #[cfg(windows)]
     {
-        let temp_profile = std::env::temp_dir().join("ProjectGuard-Profile");
-        let profile_arg = format!("--user-data-dir={}", temp_profile.display());
-
         // 1. Windows Edge Application Mode (Windows 10 / 11'de yerleşik gelir)
         let edge_paths = [
             r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -159,7 +157,6 @@ fn launch_desktop_app_window(url: &str) {
                         &format!("--app={}", url),
                         "--window-size=1360,860",
                         "--app-title=Project Guard EDR & Antivirus",
-                        &profile_arg,
                         "--no-first-run",
                         "--no-default-browser-check",
                     ])
@@ -182,7 +179,6 @@ fn launch_desktop_app_window(url: &str) {
                         &format!("--app={}", url),
                         "--window-size=1360,860",
                         "--app-title=Project Guard EDR & Antivirus",
-                        &profile_arg,
                         "--no-first-run",
                         "--no-default-browser-check",
                     ])
@@ -794,6 +790,86 @@ async fn handle_service_stop() -> Json<serde_json::Value> {
         Ok(Ok(_)) => Json(serde_json::json!({ "success": true })),
         Ok(Err(e)) => Json(serde_json::json!({ "success": false, "error": format!("Hizmet durdurulamadi: {}", e) })),
         Err(e) => Json(serde_json::json!({ "success": false, "error": format!("Gorev hatasi: {}", e) })),
+    }
+}
+
+async fn handle_service_install() -> Json<serde_json::Value> {
+    let exe = match std::env::current_exe() {
+        Ok(p) => p,
+        Err(e) => return Json(serde_json::json!({
+            "success": false,
+            "error": format!("Calistirilabilir dosya yolu alinamadi: {}", e)
+        })),
+    };
+
+    let res = tokio::task::spawn_blocking(move || {
+        // UAC yükseltmesi için PowerShell RunAs kullan
+        // Bu işlem bir UAC onay penceresi açacak
+        let script = format!(
+            r#"
+$exe = '{}'
+$result = @{{}}
+try {{
+    # Önce eski servisi kaldır (varsa)
+    Start-Process 'sc.exe' -ArgumentList 'stop ProjectGuard' -Verb RunAs -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 1000
+    Start-Process 'sc.exe' -ArgumentList 'delete ProjectGuard' -Verb RunAs -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 500
+
+    # Servisi kur
+    $installResult = Start-Process $exe -ArgumentList 'service','install' -Verb RunAs -Wait -PassThru -WindowStyle Hidden
+    Start-Sleep -Milliseconds 1000
+
+    # Servisi başlat
+    $startResult = Start-Process $exe -ArgumentList 'service','start' -Verb RunAs -Wait -PassThru -WindowStyle Hidden
+    Write-Host "OK"
+}} catch {{
+    Write-Host "ERR: $($_.Exception.Message)"
+}}
+"#,
+            exe.display()
+        );
+
+        use std::os::windows::process::CommandExt;
+        std::process::Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-WindowStyle", "Hidden",
+                "-Command",
+                &script,
+            ])
+            .creation_flags(0x08000000)
+            .spawn()
+            .and_then(|mut c| c.wait())
+            .map_err(|e| anyhow::anyhow!("{}", e))
+    }).await;
+
+    match res {
+        Ok(Ok(_)) => {
+            // Kurulum sonrası servis durumunu sorgula
+            std::thread::sleep(std::time::Duration::from_millis(2000));
+            match crate::service::WindowsServiceManager::query_status() {
+                Ok(st) => Json(serde_json::json!({
+                    "success": true,
+                    "message": "Windows Hizmeti kuruldu!",
+                    "state": st.state,
+                    "is_installed": st.is_installed
+                })),
+                Err(_) => Json(serde_json::json!({
+                    "success": true,
+                    "message": "Kurulum tamamlandı. Durumu yenileyerek kontrol edin."
+                })),
+            }
+        }
+        Ok(Err(e)) => Json(serde_json::json!({
+            "success": false,
+            "error": format!("Hizmet kurulamadi: {}", e)
+        })),
+        Err(e) => Json(serde_json::json!({
+            "success": false,
+            "error": format!("Gorev hatasi: {}", e)
+        })),
     }
 }
 

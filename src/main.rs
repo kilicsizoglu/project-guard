@@ -291,7 +291,7 @@ fn get_project_dirs() -> Result<(PathBuf, PathBuf, PathBuf)> {
 }
 
 fn dirs_base() -> PathBuf {
-    PathBuf::from(".project_guard")
+    PathBuf::from(r"C:\ProgramData\ProjectGuard")
 }
 
 fn build_orchestrator(
@@ -338,7 +338,25 @@ fn print_banner() {
     );
 }
 
-fn main() -> Result<()> {
+fn main() {
+    if let Err(e) = run_main() {
+        let temp_log = std::env::temp_dir().join("project_guard_crash.log");
+        let _ = std::fs::write(&temp_log, format!("Project Guard başlatılırken kritik bir hata oluştu:\n{:#?}\n\nBu dosya otomatik oluşturulmuştur.", e));
+        
+        #[cfg(windows)]
+        {
+            // Basit bir uyarı göstermek için PowerShell'i kullan (Harici kütüphane gerektirmeyen fallback)
+            let msg = format!("Project Guard başlatılamadı. Hata detayı: {}", temp_log.display());
+            let _ = std::process::Command::new("powershell")
+                .args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &format!("[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); [System.Windows.Forms.MessageBox]::Show('{}', 'Project Guard Hata', 0, 16)", msg)])
+                .spawn();
+        }
+
+        std::process::exit(1);
+    }
+}
+
+fn run_main() -> Result<()> {
     let cli = Cli::parse();
     let command = cli.command.unwrap_or(Commands::Gui { port: 7890 });
 
@@ -1209,9 +1227,7 @@ fn main() -> Result<()> {
                     });
                 }
                 ServiceCommands::Run => {
-                    let base_dir = dirs_base();
-                    println!("{}", "Project Guard Windows Hizmeti arka plan daemon modu baslatildi...".cyan().bold());
-                    service::WindowsServiceManager::run_service_daemon(&base_dir)?;
+                    service::run_windows_service()?;
                 }
             }
         }
