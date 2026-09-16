@@ -1,7 +1,26 @@
 [package]
 name = "project-guard"
-version = "0.1.0"
+version = "1.1.0"
 edition = "2024"
+description = "Next-generation open-source Antivirus, EDR & Threat Hunting agent in pure Rust with Windows Defender dual-layer coexistence."
+authors = ["Project Guard Team <security@projectguard.dev>"]
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/kilic/project-guard"
+homepage = "https://github.com/kilic/project-guard"
+documentation = "https://github.com/kilic/project-guard#readme"
+readme = "README.md"
+keywords = [
+    "antivirus",
+    "edr",
+    "threat-hunting",
+    "yara",
+    "cybersecurity"
+]
+categories = [
+    "command-line-utilities",
+    "development-tools",
+    "os::windows-apis"
+]
 
 [dependencies]
 anyhow = "1.0.104"

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "💬 Discussions & Questions"
+    url: "https://github.com/kilic/project-guard/discussions"
+    about: "Ask questions, share threat hunting ideas, and connect with the community."
+  - name: "🔒 Security Vulnerability Reporting"
+    url: "https://github.com/kilic/project-guard/security/advisories/new"
+    about: "Privately disclose potential security vulnerabilities."

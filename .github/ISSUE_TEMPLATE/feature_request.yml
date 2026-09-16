@@ -1,0 +1,31 @@
+name: "💡 Feature Request"
+description: "Suggest an idea, new detection engine, threat feed, or heuristic rule"
+title: "[FEATURE]: "
+labels: ["enhancement", "discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We welcome feature requests and proposals for new detection engines, threat intelligence feeds, or evasion hunting capabilities!
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem or Need"
+      description: "Is your feature request related to a specific attack technique, malware family, or usability gap?"
+      placeholder: "e.g., I want Project Guard to detect technique T1055..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution / Detection Methodology"
+      description: "Describe the algorithm, engine, or Windows API you propose using."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternative Approaches"
+      description: "Describe any alternative solutions or features you've considered."
+    validations:
+      required: false
