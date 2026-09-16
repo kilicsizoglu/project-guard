@@ -13,7 +13,19 @@ Ensure your system has:
 
 ---
 
-## ⚡ Step 1: Build the Executable with Embedded Windows Icon
+## ⚡ Fast-Track: 1-Click Windows Setup (Zero Config)
+
+If you just want to install and use Project Guard immediately on Windows:
+
+1. Double-click **`Setup.cmd`** in the repository root.
+2. Accept the Windows UAC Administrator prompt (**Yes**).
+3. Project Guard will automatically build (if needed), install to `C:\Program Files\ProjectGuard`, add Desktop & Start Menu shortcuts, register system PATH, configure 7/24 Windows Service, and launch the Desktop Control Center!
+
+To uninstall cleanly at any time, double-click **`Uninstall.cmd`** or remove from Windows Settings > Installed Apps.
+
+---
+
+## ⚡ Step 1: Build the Executable with Embedded Windows Icon (Manual)
 
 Clone the repository and build the release binary:
 

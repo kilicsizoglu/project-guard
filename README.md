@@ -96,7 +96,31 @@ Geleneksel imza tabanlı antivirüslerin ötesine geçerek; **canlı Windows Ola
 
 ---
 
-## 🛠️ Kurulum ve Derleme
+## 🚀 Kolay Kurulum (1-Click Windows Setup)
+
+Project Guard'ı sisteminize kurmak, masaüstü simgesi oluşturmak ve 7/24 arka plan korumasını aktif etmek için hiçbir teknik komut girmenize gerek yoktur:
+
+### 🌟 Tek Tıkla Kurulum (`Setup.cmd`)
+1. Proje kök dizinindeki **`Setup.cmd`** dosyasına çift tıklayın.
+2. Açılan Windows UAC (Kullanıcı Hesabı Denetimi) onay penceresinde **"Evet"** butonuna basın.
+3. Otomatik Kurulum Sihirbazı anında şu adımları tamamlar:
+   * **C:\Program Files\ProjectGuard** kurumsal dizinini hazırlar.
+   * En güncel ve optimize ikili dosyayı (`project-guard.exe`) ve görsel varlıkları kopyalar.
+   * **Masaüstü** ve **Başlat Menüsü**'ne özel logonun yer aldığı kısayolları ekler.
+   * Komut satırından her yerden erişim için sistem `PATH` ortam değişkenine ekler.
+   * 7/24 arka plan **Windows Hizmetini (ProjectGuard)** kaydeder ve otomatik başlatır.
+   * Windows Masaüstü Kontrol Merkezini (GUI) doğrudan açar.
+
+### 🗑️ Tek Tıkla Kaldırma (`Uninstall.cmd`)
+* İster Başlat Menüsündeki **"Uninstall Project Guard"** kısayoluna, ister kök dizindeki **`Uninstall.cmd`** dosyasına çift tıklayarak hizmeti durdurup tüm dosyaları ve kısayolları sisteminizden temizleyebilirsiniz.
+* Ayrıca Windows **Ayarlar > Uygulamalar (Program Ekle/Kaldır)** listesinden de standart bir Windows uygulaması gibi kaldırılabilir.
+
+### 📦 Bağımsız Kurulum Paketi (.exe Installer)
+* Dilerseniz `installer/project-guard.iss` dosyasını [Inno Setup 6](https://jrsoftware.org/isinfo.php) ile derleyerek tek bir bağımsız **`ProjectGuard-Setup-v1.1.0.exe`** dağıtım dosyası elde edebilirsiniz.
+
+---
+
+## 🛠️ Kurulum ve Derleme (Geliştiriciler İçin)
 
 ### Ön Koşullar
 * **Windows 10 / 11 / Server 2019+** (x64 veya ARM64)

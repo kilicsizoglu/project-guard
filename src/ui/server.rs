@@ -130,6 +130,9 @@ pub async fn start_web_ui(state: AppState, port: u16) -> Result<()> {
 fn launch_desktop_app_window(url: &str) {
     #[cfg(windows)]
     {
+        let temp_profile = std::env::temp_dir().join("ProjectGuard-Profile");
+        let profile_arg = format!("--user-data-dir={}", temp_profile.display());
+
         // 1. Windows Edge Application Mode (Windows 10 / 11'de yerleşik gelir)
         let edge_paths = [
             r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -142,6 +145,9 @@ fn launch_desktop_app_window(url: &str) {
                         &format!("--app={}", url),
                         "--window-size=1360,860",
                         "--app-title=Project Guard EDR & Antivirus",
+                        &profile_arg,
+                        "--no-first-run",
+                        "--no-default-browser-check",
                     ])
                     .spawn()
                 {
@@ -162,6 +168,9 @@ fn launch_desktop_app_window(url: &str) {
                         &format!("--app={}", url),
                         "--window-size=1360,860",
                         "--app-title=Project Guard EDR & Antivirus",
+                        &profile_arg,
+                        "--no-first-run",
+                        "--no-default-browser-check",
                     ])
                     .spawn()
                 {
