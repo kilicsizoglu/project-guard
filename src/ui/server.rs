@@ -114,14 +114,28 @@ pub async fn start_web_ui(state: AppState, port: u16) -> Result<()> {
         .route("/favicon.ico", get(handle_favicon))
         .route("/assets/fatrab-icon.png", get(handle_fatrab_icon))
         .route("/assets/fatrab-banner.png", get(handle_fatrab_banner))
+        .route("/api/system/shutdown", post(handle_system_shutdown))
         .with_state(state);
 
     let addr = format!("127.0.0.1:{}", port);
-    let listener = TcpListener::bind(&addr).await?;
+    let listener = match TcpListener::bind(&addr).await {
+        Ok(l) => l,
+        Err(e) if e.kind() == std::io::ErrorKind::AddrInUse => {
+            // Already running in background; bring up UI window and exit launcher
+            let url = format!("http://{}", addr);
+            launch_desktop_app_window(&url);
+            return Ok(());
+        }
+        Err(e) => return Err(e.into()),
+    };
     println!("Web UI Kontrol Paneli Baslatildi: http://{}", addr);
 
     let url = format!("http://{}", addr);
-    launch_desktop_app_window(&url);
+    let launch_url = url.clone();
+    tokio::spawn(async move {
+        tokio::time::sleep(tokio::time::Duration::from_millis(150)).await;
+        launch_desktop_app_window(&launch_url);
+    });
 
     axum::serve(listener, app).await?;
     Ok(())
@@ -140,7 +154,7 @@ fn launch_desktop_app_window(url: &str) {
         ];
         for edge in edge_paths {
             if std::path::Path::new(edge).exists() {
-                if let Ok(mut child) = std::process::Command::new(edge)
+                if let Ok(_) = std::process::Command::new(edge)
                     .args([
                         &format!("--app={}", url),
                         "--window-size=1360,860",
@@ -151,10 +165,6 @@ fn launch_desktop_app_window(url: &str) {
                     ])
                     .spawn()
                 {
-                    std::thread::spawn(move || {
-                        let _ = child.wait();
-                        std::process::exit(0);
-                    });
                     return;
                 }
             }
@@ -167,7 +177,7 @@ fn launch_desktop_app_window(url: &str) {
         ];
         for chrome in chrome_paths {
             if std::path::Path::new(chrome).exists() {
-                if let Ok(mut child) = std::process::Command::new(chrome)
+                if let Ok(_) = std::process::Command::new(chrome)
                     .args([
                         &format!("--app={}", url),
                         "--window-size=1360,860",
@@ -178,24 +188,17 @@ fn launch_desktop_app_window(url: &str) {
                     ])
                     .spawn()
                 {
-                    std::thread::spawn(move || {
-                        let _ = child.wait();
-                        std::process::exit(0);
-                    });
                     return;
                 }
             }
         }
 
         // 3. Fallback: Varsayılan tarayıcı
-        #[cfg(windows)]
-        {
-            use std::os::windows::process::CommandExt;
-            let _ = std::process::Command::new("cmd")
-                .args(["/C", "start", url])
-                .creation_flags(0x08000000) // CREATE_NO_WINDOW
-                .spawn();
-        }
+        use std::os::windows::process::CommandExt;
+        let _ = std::process::Command::new("cmd")
+            .args(["/C", "start", url])
+            .creation_flags(0x08000000) // CREATE_NO_WINDOW
+            .spawn();
     }
     #[cfg(not(windows))]
     {
@@ -822,5 +825,10 @@ async fn handle_fatrab_banner() -> impl IntoResponse {
     )
 }
 
-
-
+async fn handle_system_shutdown() -> Json<serde_json::Value> {
+    tokio::spawn(async {
+        tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
+        std::process::exit(0);
+    });
+    Json(serde_json::json!({ "success": true, "message": "Project Guard kapatılıyor..." }))
+}

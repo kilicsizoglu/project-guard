@@ -333,15 +333,31 @@ namespace ProjectGuard.Installer
                     {
                         dynamic shell = Activator.CreateInstance(shellType);
 
-                        // Desktop Shortcut
-                        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
-                        dynamic desktopShortcut = shell.CreateShortcut(Path.Combine(desktopPath, "Project Guard.lnk"));
-                        desktopShortcut.TargetPath = exePath;
-                        desktopShortcut.Arguments = "gui";
-                        desktopShortcut.WorkingDirectory = targetDir;
-                        desktopShortcut.IconLocation = iconPath + ",0";
-                        desktopShortcut.Description = "Project Guard Autonomous EDR & Antivirus";
-                        desktopShortcut.Save();
+                        // Desktop Shortcut (Public + User + OneDrive)
+                        string[] desktopDirs = new string[]
+                        {
+                            Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+                            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "OneDrive", "Desktop")
+                        };
+
+                        foreach (string dPath in desktopDirs)
+                        {
+                            if (!string.IsNullOrEmpty(dPath) && Directory.Exists(dPath))
+                            {
+                                try
+                                {
+                                    dynamic desktopShortcut = shell.CreateShortcut(Path.Combine(dPath, "Project Guard.lnk"));
+                                    desktopShortcut.TargetPath = exePath;
+                                    desktopShortcut.Arguments = "gui";
+                                    desktopShortcut.WorkingDirectory = targetDir;
+                                    desktopShortcut.IconLocation = iconPath + ",0";
+                                    desktopShortcut.Description = "Project Guard Autonomous EDR & Antivirus";
+                                    desktopShortcut.Save();
+                                }
+                                catch { }
+                            }
+                        }
 
                         // Start Menu
                         string startMenuPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);

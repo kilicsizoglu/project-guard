@@ -631,6 +631,9 @@
                     <button class="lang-btn active" id="lang-tr" onclick="setLanguage('tr')">🇹🇷 TR</button>
                     <button class="lang-btn" id="lang-en" onclick="setLanguage('en')">🇬🇧 EN</button>
                 </div>
+                <button class="btn-secondary" style="background: rgba(244,63,94,0.12); border: 1px solid rgba(244,63,94,0.3); color: #f43f5e; padding: 5px 11px; font-size: 11.5px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 500;" onclick="shutdownApp()" title="Project Guard'ı Kapat">
+                    <span>&#10006;</span> <span data-i18n="btn_exit">Kapat</span>
+                </button>
             </div>
         </div>
 
@@ -1715,7 +1718,8 @@
                 svc_status_starting: "BAŞLATILIYOR (STARTING)",
                 svc_status_updated: "Windows Hizmet durumu güncellendi: ",
                 svc_started_ok: "Project Guard Hizmeti başarıyla başlatıldı!",
-                svc_stopped_ok: "Project Guard Hizmeti durduruldu."
+                svc_stopped_ok: "Project Guard Hizmeti durduruldu.",
+                btn_exit: "Kapat"
             },
             en: {
                 brand_subtitle: "Threat Control Console",
@@ -1797,7 +1801,8 @@
                 svc_status_starting: "STARTING",
                 svc_status_updated: "Windows Service status updated: ",
                 svc_started_ok: "Project Guard Service started successfully!",
-                svc_stopped_ok: "Project Guard Service stopped."
+                svc_stopped_ok: "Project Guard Service stopped.",
+                btn_exit: "Exit App"
             }
         };
 
@@ -3174,6 +3179,18 @@ IEX $client.DownloadString($url)`;
                 }
             } catch (e) {
                 alert('Hizmet durdurma hatası: ' + e);
+            }
+        }
+
+        async function shutdownApp() {
+            const msg = currentLang === 'tr' 
+                ? 'Project Guard kontrol merkezini ve arka plan motorunu kapatmak istediğinizden emin misiniz?' 
+                : 'Are you sure you want to shut down Project Guard console and background engine?';
+            if (confirm(msg)) {
+                try {
+                    await fetch('/api/system/shutdown', { method: 'POST' });
+                } catch (e) {}
+                window.close();
             }
         }
 
