@@ -4,6 +4,15 @@
 
 <h1 align="center">Project Guard</h1>
 
+<div align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank">
+    <img src="assets/feature-graphic-1024x500.png" alt="FatRab Bütçe Takipçisi" width="600" style="border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 10px;" />
+  </a>
+  <p>
+    <em>🌟 Sponsored by <strong><a href="https://play.google.com/store/apps/details?id=com.fatrab.budget">FatRab Budget Tracker</a></strong> - Manage your personal finances effortlessly! Available on Google Play. 🌟</em>
+  </p>
+</div>
+
 <p align="center">
   <strong>Next-Generation Open-Source Windows Antivirus, EDR & Threat Hunting Platform</strong><br>
   <em>Engineered in Pure Rust (2024 Edition) with Windows Defender Dual-Layer Coexistence & 21 Autonomous Engines</em>

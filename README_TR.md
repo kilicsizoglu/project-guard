@@ -4,6 +4,15 @@
 
 <h1 align="center">Project Guard (Türkçe Dokümantasyon)</h1>
 
+<div align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank">
+    <img src="assets/feature-graphic-1024x500.png" alt="FatRab Bütçe Takipçisi" width="600" style="border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 10px;" />
+  </a>
+  <p>
+    <em>🌟 Sponsorumuz <strong><a href="https://play.google.com/store/apps/details?id=com.fatrab.budget">FatRab Bütçe Takipçisi</a></strong> - Kişisel Bütçenizi Kolayca Yönetin! Google Play'de. 🌟</em>
+  </p>
+</div>
+
 <p align="center">
   <strong>Yeni Nesil Açık Kaynak Uç Nokta Güvenliği (EDR), Antivirüs ve Tehdit Avlama Platformu</strong><br>
   <em>Saf Rust (2024 Edition) ile Geliştirilmiş, Windows Defender Çift Katmanlı Eşzamanlı Koruma Mimarisi</em>
