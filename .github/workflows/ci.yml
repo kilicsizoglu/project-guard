@@ -28,3 +28,12 @@ jobs:
 
       - name: Build Release Binary
         run: cargo build --release --verbose
+
+      - name: Build Standalone Installer Package (.exe & .zip)
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-installer.ps1
+
+      - name: Upload Installer Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProjectGuard-Windows-Installer
+          path: dist/*

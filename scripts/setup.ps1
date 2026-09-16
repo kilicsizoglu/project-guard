@@ -39,11 +39,17 @@ if (-not $isAdmin) {
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 
+$sameDirExe = Join-Path $scriptDir "project-guard.exe"
+$parentExe = Join-Path $projectRoot "project-guard.exe"
 $releaseExe = Join-Path $projectRoot "target\release\project-guard.exe"
 $debugExe = Join-Path $projectRoot "target\debug\project-guard.exe"
 
 $sourceExe = ""
-if (Test-Path $releaseExe) {
+if (Test-Path $sameDirExe) {
+    $sourceExe = $sameDirExe
+} elseif (Test-Path $parentExe) {
+    $sourceExe = $parentExe
+} elseif (Test-Path $releaseExe) {
     $sourceExe = $releaseExe
 } elseif (Test-Path $debugExe) {
     $sourceExe = $debugExe
@@ -87,6 +93,9 @@ Write-Host "  -> project-guard.exe kopyalandi." -ForegroundColor Gray
 
 # Copy assets (icon, banner)
 $sourceAssets = Join-Path $projectRoot "assets"
+if (-not (Test-Path $sourceAssets)) {
+    $sourceAssets = Join-Path $scriptDir "assets"
+}
 if (Test-Path $sourceAssets) {
     Copy-Item -Path "$sourceAssets\*" -Destination $destAssets -Recurse -Force
     Write-Host "  -> assets (simgeler ve logolar) kopyalandi." -ForegroundColor Gray
@@ -96,6 +105,9 @@ if (Test-Path $sourceAssets) {
 $docs = @("README.md", "QUICKSTART.md", "ARCHITECTURE.md", "LICENSE", "Uninstall.cmd")
 foreach ($doc in $docs) {
     $docPath = Join-Path $projectRoot $doc
+    if (-not (Test-Path $docPath)) {
+        $docPath = Join-Path $scriptDir $doc
+    }
     if (Test-Path $docPath) {
         Copy-Item -Path $docPath -Destination $InstallDir -Force
     }
