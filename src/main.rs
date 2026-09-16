@@ -31,7 +31,7 @@ use quarantine::QuarantineManager;
 )]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -197,6 +197,13 @@ enum Commands {
         port: u16,
     },
 
+    /// Windows Masaustu Uygulamasi Penceresi (Standalone Desktop Window) olarak baslatir
+    Gui {
+        /// Calisacagi yerel port (Varsayilan: 7890)
+        #[arg(short, long, default_value_t = 7890)]
+        port: u16,
+    },
+
     /// Windows Hizmet (Service) yonetimi: 7/24 arka plan EDR ve canli koruma
     Service {
         #[command(subcommand)]
@@ -301,8 +308,9 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     let (db_path, quarantine_dir, rules_dir) = get_project_dirs()?;
     let db = Arc::new(Mutex::new(DbStore::new(&db_path)?));
+    let command = cli.command.unwrap_or(Commands::Gui { port: 7890 });
 
-    match cli.command {
+    match command {
         Commands::Scan {
             target,
             quarantine,
@@ -1090,9 +1098,9 @@ fn main() -> Result<()> {
             }
         }
 
-        Commands::Ui { port } => {
+        Commands::Ui { port } | Commands::Gui { port } => {
             print_banner();
-            println!("{}", "PROJECT GUARD GORSEL KONTROL MERKEZI BASLATILIYOR...".cyan().bold());
+            println!("{}", "PROJECT GUARD WINDOWS MASAUSTU KONTROL MERKEZI BASLATILIYOR...".green().bold());
             let (orchestrator, q_mgr, _, yara_eng) = build_orchestrator(Arc::clone(&db), quarantine_dir, rules_dir.clone())?;
             let base_dir = dirs_base();
             let state = ui::AppState {

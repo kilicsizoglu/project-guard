@@ -120,14 +120,65 @@ pub async fn start_web_ui(state: AppState, port: u16) -> Result<()> {
     let listener = TcpListener::bind(&addr).await?;
     println!("Web UI Kontrol Paneli Baslatildi: http://{}", addr);
 
-    // Tarayıcıyı otomatik açmayı dene
     let url = format!("http://{}", addr);
-    let _ = std::process::Command::new("cmd")
-        .args(["/C", "start", &url])
-        .spawn();
+    launch_desktop_app_window(&url);
 
     axum::serve(listener, app).await?;
     Ok(())
+}
+
+fn launch_desktop_app_window(url: &str) {
+    #[cfg(windows)]
+    {
+        // 1. Windows Edge Application Mode (Windows 10 / 11'de yerleşik gelir)
+        let edge_paths = [
+            r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+            r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        ];
+        for edge in edge_paths {
+            if std::path::Path::new(edge).exists() {
+                if let Ok(_) = std::process::Command::new(edge)
+                    .args([
+                        &format!("--app={}", url),
+                        "--window-size=1360,860",
+                        "--app-title=Project Guard EDR & Antivirus",
+                    ])
+                    .spawn()
+                {
+                    return;
+                }
+            }
+        }
+
+        // 2. Google Chrome Application Mode
+        let chrome_paths = [
+            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        ];
+        for chrome in chrome_paths {
+            if std::path::Path::new(chrome).exists() {
+                if let Ok(_) = std::process::Command::new(chrome)
+                    .args([
+                        &format!("--app={}", url),
+                        "--window-size=1360,860",
+                        "--app-title=Project Guard EDR & Antivirus",
+                    ])
+                    .spawn()
+                {
+                    return;
+                }
+            }
+        }
+
+        // 3. Fallback: Varsayılan tarayıcı
+        let _ = std::process::Command::new("cmd")
+            .args(["/C", "start", url])
+            .spawn();
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = std::process::Command::new("xdg-open").arg(url).spawn();
+    }
 }
 
 async fn handle_index() -> impl IntoResponse {

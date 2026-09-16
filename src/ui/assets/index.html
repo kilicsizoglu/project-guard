@@ -172,6 +172,76 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Top Navigation / App Header Bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            padding: 10px 18px;
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .topbar-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--emerald);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .topbar-info {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .lang-switch-container {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            font-size: 11.5px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .lang-btn.active {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--cyan);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+        }
+
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -468,67 +538,67 @@
             <div class="brand-icon"><img src="/favicon.ico" style="width:26px; height:26px; border-radius:6px;" alt="Shield"></div>
             <div>
                 <div class="brand-title">Project Guard</div>
-                <div class="brand-subtitle">Tehdit Kontrol Paneli</div>
+                <div class="brand-subtitle" data-i18n="brand_subtitle">Tehdit Kontrol Paneli</div>
             </div>
         </div>
 
         <div class="nav-menu">
             <div class="nav-item active" onclick="switchTab('tab-overview')">
-                <span class="nav-icon">&#128202;</span> Genel Bakis
+                <span class="nav-icon">&#128202;</span> <span data-i18n="nav_overview">Genel Bakış</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-scanner')">
-                <span class="nav-icon">&#128269;</span> Dosya Tarama
+                <span class="nav-icon">&#128269;</span> <span data-i18n="nav_scanner">Dosya Tarama</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-processes')">
-                <span class="nav-icon">&#9889;</span> Surec Avcisi
+                <span class="nav-icon">&#9889;</span> <span data-i18n="nav_processes">Süreç Avcısı</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-memory')">
-                <span class="nav-icon">&#129504;</span> Bellek & Enjeksiyon
+                <span class="nav-icon">&#129504;</span> <span data-i18n="nav_memory">Bellek & Enjeksiyon</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-lolbas')">
-                <span class="nav-icon">&#128737;</span> LOLBAS & Anomali
+                <span class="nav-icon">&#128737;</span> <span data-i18n="nav_lolbas">LOLBAS & Anomali</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-usb')">
-                <span class="nav-icon">&#128190;</span> USB & Surucu
+                <span class="nav-icon">&#128190;</span> <span data-i18n="nav_usb">USB & Sürücü</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-persistence')">
-                <span class="nav-icon">&#9881;</span> Kalicilik (Autoruns)
+                <span class="nav-icon">&#9881;</span> <span data-i18n="nav_persistence">Kalıcılık (Autoruns)</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-canary')">
-                <span class="nav-icon">&#128038;</span> Fidye Kapani (Canary)
+                <span class="nav-icon">&#128038;</span> <span data-i18n="nav_canary">Fidye Kapanı (Canary)</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-network')">
-                <span class="nav-icon">&#128376;</span> Ag & C2 Avcisi
+                <span class="nav-icon">&#128376;</span> <span data-i18n="nav_network">Ağ & C2 Avcısı</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-quarantine')">
-                <span class="nav-icon">&#128230;</span> Karantina Kasasi
+                <span class="nav-icon">&#128230;</span> <span data-i18n="nav_quarantine">Karantina Kasası</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-feeds')">
-                <span class="nav-icon">&#127760;</span> Tehdit Istihbarati
+                <span class="nav-icon">&#127760;</span> <span data-i18n="nav_feeds">Tehdit İstihbaratı</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-drivers')">
-                <span class="nav-icon">&#128680;</span> Sürücü Avcısı (BYOVD)
+                <span class="nav-icon">&#128680;</span> <span data-i18n="nav_drivers">Sürücü Avcısı (BYOVD)</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-fim')">
-                <span class="nav-icon">&#128274;</span> FIM Sistem Bütünlüğü
+                <span class="nav-icon">&#128274;</span> <span data-i18n="nav_fim">FIM Sistem Bütünlüğü</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-scripts')">
-                <span class="nav-icon">&#128220;</span> Komut & AMSI Avcısı
+                <span class="nav-icon">&#128220;</span> <span data-i18n="nav_scripts">Komut & AMSI Avcısı</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-iocs')">
-                <span class="nav-icon">&#128065;</span> Statik IOC Triyajı
+                <span class="nav-icon">&#128065;</span> <span data-i18n="nav_iocs">Statik IOC Triyajı</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-eventlog')">
-                <span class="nav-icon">&#128450;</span> Olay Günlüğü (EventLog)
+                <span class="nav-icon">&#128450;</span> <span data-i18n="nav_eventlog">Olay Günlüğü (EventLog)</span>
             </div>
             <div class="nav-item" onclick="switchTab('tab-triage')">
-                <span class="nav-icon">&#128300;</span> Derin PE Triyajı & Entropi
+                <span class="nav-icon">&#128300;</span> <span data-i18n="nav_triage">Derin PE Triyajı & Entropi</span>
             </div>
         </div>
 
         <div class="system-badge" id="sidebar-defender-badge" onclick="switchTab('tab-overview')" style="cursor:pointer;" title="Windows Defender Eşzamanlı Çalışma Detayları">
             <div class="pulse-dot"></div>
-            <span id="sidebar-defender-text">Defender: Dual-Layer OK</span>
+            <span id="sidebar-defender-text" data-i18n="sidebar_defender">Defender: Dual-Layer OK</span>
         </div>
 
         <!-- FatRab App Recommendation (Subtle & Non-Intrusive) -->
@@ -536,8 +606,8 @@
             <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
                 <img src="/assets/fatrab-icon.png" alt="FatRab" style="width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;" onerror="this.src='play-icon-512.png'" />
                 <div style="text-align: left; line-height: 1.25; min-width: 0;">
-                    <div style="font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">FatRab Bütçe Takipçisi</div>
-                    <div style="font-size: 10px; color: #34A853; font-weight: 500;">Google Play'de İndir ↗</div>
+                    <div style="font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-i18n="fatrab_title">FatRab Bütçe Takipçisi</div>
+                    <div style="font-size: 10px; color: #34A853; font-weight: 500;" data-i18n="fatrab_download">Google Play'de İndir ↗</div>
                 </div>
             </a>
         </div>
@@ -546,15 +616,33 @@
     <!-- Main Content Area -->
     <main>
 
+        <!-- Topbar: Windows App System Status & Language Selector -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <span class="topbar-chip">
+                    <span class="pulse-dot" style="width:6px; height:6px;"></span>
+                    <span data-i18n="topbar_status">Windows 10/11 EDR Koruması Aktif</span>
+                </span>
+                <span class="topbar-info" data-i18n="topbar_coexistence">Dual-Layer Defender Eşzamanlı Mod</span>
+            </div>
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 11px; color: var(--text-muted);" data-i18n="lang_label">Dil / Language:</span>
+                <div class="lang-switch-container">
+                    <button class="lang-btn active" id="lang-tr" onclick="setLanguage('tr')">🇹🇷 TR</button>
+                    <button class="lang-btn" id="lang-en" onclick="setLanguage('en')">🇬🇧 EN</button>
+                </div>
+            </div>
+        </div>
+
         <!-- TAB 1: OVERVIEW -->
         <div id="tab-overview" class="tab-content active">
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Sistem Guvenlik Durumu</h1>
-                    <p class="page-desc">14 adet coklu motor, LOLBAS avcisi ve acik kaynak istihbarat akisinin canli saglik tablosu.</p>
+                    <h1 class="page-title" data-i18n="overview_title">Sistem Güvenlik Durumu</h1>
+                    <p class="page-desc" data-i18n="overview_desc">21 adet çoklu motor, LOLBAS avcısı ve açık kaynak istihbarat akışının canlı sağlık tablosu.</p>
                 </div>
                 <button class="btn" onclick="triggerUpdate()">
-                    <span>&#8635;</span> Imzalari Guncelle
+                    <span>&#8635;</span> <span data-i18n="btn_update_signatures">İmzaları Güncelle</span>
                 </button>
             </div>
 
@@ -570,14 +658,14 @@
                     <div class="stat-desc">Feodo Tracker aktif C2 ipleri</div>
                 </div>
                 <div class="card">
-                    <div class="stat-label">Karantina Kasasi <span>&#128230;</span></div>
+                    <div class="stat-label"><span data-i18n="stat_quar_count">Karantina Kasası</span> <span>&#128230;</span></div>
                     <div class="stat-val" id="stat-quar-count" style="color: var(--amber);">-</div>
-                    <div class="stat-desc">XOR 0x5A sifrelemeli kasa</div>
+                    <div class="stat-desc" data-i18n="stat_quar_count_desc">XOR 0x5A şifrelemeli kasa</div>
                 </div>
                 <div class="card">
-                    <div class="stat-label">Windows Defender Durumu <span>&#128737;</span></div>
-                    <div class="stat-val" id="stat-defender-val" style="color: var(--emerald);">Aktif & Uyumlu</div>
-                    <div class="stat-desc" id="stat-defender-desc">Real-Time Protection devrede</div>
+                    <div class="stat-label"><span data-i18n="stat_defender_val">Windows Defender Durumu</span> <span>&#128737;</span></div>
+                    <div class="stat-val" id="stat-defender-val" style="color: var(--emerald);" data-i18n="stat_defender_active">Aktif & Uyumlu</div>
+                    <div class="stat-desc" id="stat-defender-desc" data-i18n="stat_defender_desc">Real-Time Protection devrede</div>
                 </div>
             </div>
 
@@ -590,20 +678,20 @@
                         </div>
                         <div>
                             <div style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                Windows Defender Eşzamanlı Çift Katmanlı Koruma (Dual-Layer Shield)
-                                <span class="pill pill-clean" id="banner-defender-pill">Aktif</span>
+                                <span data-i18n="defender_banner_title">Windows Defender Eşzamanlı Çift Katmanlı Koruma (Dual-Layer Shield)</span>
+                                <span class="pill pill-clean" id="banner-defender-pill" data-i18n="active">Aktif</span>
                             </div>
-                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;" id="banner-defender-details">
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;" id="banner-defender-details" data-i18n="defender_banner_desc">
                                 MpCmdRun yerel tarayıcısı entegre. WdFilter Hata 225 atlama devrede. Karantina dosyaları XOR 0x5A ile korunuyor.
                             </div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <div style="text-align: right;">
-                            <div style="font-size: 11px; color: var(--text-muted);">İmza Güncelliği</div>
+                            <div style="font-size: 11px; color: var(--text-muted);" data-i18n="defender_age_label">İmza Güncelliği</div>
                             <div style="font-size: 13px; font-weight: 600; color: var(--emerald);" id="banner-defender-age">0 gün önce</div>
                         </div>
-                        <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px; border-radius: 7px; cursor: pointer;" onclick="loadDefenderInfo(true)">
+                        <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px; border-radius: 7px; cursor: pointer;" onclick="loadDefenderInfo(true)" data-i18n="btn_refresh_telemetry">
                             Telemetriyi Yenile
                         </button>
                     </div>
@@ -619,29 +707,29 @@
                         </div>
                         <div>
                             <div style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                Project Guard Windows Hizmeti (24/7 EDR Servisi)
+                                <span data-i18n="service_card_title">Project Guard Windows Hizmeti (24/7 EDR Servisi)</span>
                                 <span class="pill pill-clean" id="svc-status-pill" style="background: rgba(6,182,212,0.2); color: var(--cyan);">Sorgulanıyor...</span>
                             </div>
-                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;" id="svc-status-desc">
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;" id="svc-status-desc" data-i18n="service_card_desc">
                                 Windows SCM Servis Adı: <strong>ProjectGuard</strong> | 7/24 Gerçek Zamanlı Koruma (RTP) ve Fidye Kapanı devrede.
                             </div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <button class="btn" style="padding: 6px 14px; font-size: 12px; background: linear-gradient(135deg, var(--emerald), #059669);" onclick="startWindowsService()" id="btn-svc-start">
-                            <span>&#9654;</span> Hizmeti Başlat
+                            <span>&#9654;</span> <span data-i18n="btn_service_start">Hizmeti Başlat</span>
                         </button>
                         <button class="btn-danger" style="padding: 6px 14px; font-size: 12px;" onclick="stopWindowsService()" id="btn-svc-stop">
-                            <span>&#9632;</span> Durdur
+                            <span>&#9632;</span> <span data-i18n="btn_service_stop">Durdur</span>
                         </button>
                         <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="loadServiceStatus(true)">
-                            <span>&#8635;</span> Yenile
+                            <span>&#8635;</span> <span data-i18n="btn_service_refresh">Yenile</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <h2 style="font-size: 17px; margin-bottom: 15px; color: #fff;">Aktif Tarama ve Tehdit Avlama Motorlari (14 Motor)</h2>
+            <h2 style="font-size: 17px; margin-bottom: 15px; color: #fff;" data-i18n="active_engines_title">Aktif Tarama ve Tehdit Avlama Motorları (21 Motor)</h2>
             <div class="engine-grid" id="engine-container">
                 <!-- Javascript ile doldurulur -->
             </div>
@@ -653,16 +741,16 @@
                         <img src="/assets/fatrab-icon.png" alt="FatRab Logo" style="width: 44px; height: 44px; border-radius: 11px; box-shadow: 0 4px 12px rgba(52, 168, 83, 0.2); object-fit: cover;" onerror="this.src='play-icon-512.png'" />
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 14px; font-weight: 700; color: #fff;">FatRab Bütçe Takipçisi</span>
+                                <span style="font-size: 14px; font-weight: 700; color: #fff;" data-i18n="fatrab_title">FatRab Bütçe Takipçisi</span>
                                 <span style="font-size: 10px; background: rgba(52, 168, 83, 0.15); color: #34A853; padding: 2px 7px; border-radius: 6px; font-weight: 600;">Google Play</span>
-                                <span style="font-size: 10px; color: var(--text-muted);">Geliştiriciden Tavsiye</span>
+                                <span style="font-size: 10px; color: var(--text-muted);" data-i18n="fatrab_badge">Geliştiriciden Tavsiye</span>
                             </div>
-                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" data-i18n="fatrab_desc">
                                 Gelir, gider ve birikimlerinizi kolayca yönetin. Sade arayüzü ve akıllı analizleriyle kişisel bütçe asistanınız.
                             </div>
                         </div>
                     </div>
-                    <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank" rel="noopener noreferrer" class="btn" style="background: linear-gradient(135deg, #34A853, #1e7e34); padding: 7px 16px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank" rel="noopener noreferrer" class="btn" style="background: linear-gradient(135deg, #34A853, #1e7e34); padding: 7px 16px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" data-i18n="fatrab_btn">
                         <span>&#128241;</span> Google Play'de İncele ↗
                     </a>
                 </div>
@@ -673,48 +761,48 @@
         <div id="tab-scanner" class="tab-content">
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Coklu Motor Tarama Merkezi</h1>
-                    <p class="page-desc">Hedef dosya veya klasoru YARA-X, Heuristic PE ve Defender motorlari ile es zamanli tarayin.</p>
+                    <h1 class="page-title" data-i18n="scanner_title">Çoklu Motor Tarama Merkezi</h1>
+                    <p class="page-desc" data-i18n="scanner_desc">Hedef dosya veya klasörü YARA-X, Heuristic PE ve Defender motorları ile eş zamanlı tarayın.</p>
                 </div>
             </div>
 
             <div class="card" style="margin-bottom: 24px;">
                 <div class="form-row">
-                    <input type="text" id="scan-path" placeholder="Taranacak dosya veya dizin yolu (Orn: .\test_samples veya C:\Users\...)">
+                    <input type="text" id="scan-path" placeholder="Taranacak dosya veya dizin yolu (Örn: C:\Users\...)" data-i18n-ph="scanner_ph">
                     <button class="btn" id="scan-btn" onclick="startScan()">
-                        <span>&#128269;</span> Taramayi Baslat
+                        <span>&#128269;</span> <span data-i18n="scanner_btn">Taramayı Başlat</span>
                     </button>
                 </div>
                 <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="scan-quar" checked> Tespit edilen zararlilari otomatik karantinaya al
+                        <input type="checkbox" id="scan-quar" checked> <span data-i18n="scanner_quar_label">Tespit edilen zararlıları otomatik karantinaya al</span>
                     </label>
                     <label class="checkbox-label">
-                        <input type="checkbox" id="scan-recursive" checked> Alt dizinleri yinelemeli tara
+                        <input type="checkbox" id="scan-recursive" checked> <span data-i18n="scanner_rec_label">Alt dizinleri yinelemeli tara</span>
                     </label>
-                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; border-radius: 6px; cursor: pointer;" onclick="document.getElementById('scan-path').value='.\\test_samples'">
-                        Ornek Klasoru Sec (test_samples)
+                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; border-radius: 6px; cursor: pointer;" onclick="document.getElementById('scan-path').value='.'" data-i18n="scanner_select_sample">
+                        Mevcut Dizini Seç (.)
                     </button>
                 </div>
             </div>
 
             <div id="scan-results-box" style="display: none;">
-                <h3 style="font-size: 16px; margin-bottom: 12px; color: #fff;">Tarama Sonuclari</h3>
+                <h3 style="font-size: 16px; margin-bottom: 12px; color: #fff;" data-i18n="scan_results_title">Tarama Sonuçları</h3>
                 <div class="grid-4" style="margin-bottom: 20px;">
                     <div class="card" style="padding: 16px;">
-                        <div class="stat-label">Taranan Dosya</div>
+                        <div class="stat-label" data-i18n="res_scanned_label">Taranan Dosya</div>
                         <div class="stat-val" id="res-scanned">-</div>
                     </div>
                     <div class="card" style="padding: 16px;">
-                        <div class="stat-label">Bulunan Tehdit</div>
+                        <div class="stat-label" data-i18n="res_infected_label">Bulunan Tehdit</div>
                         <div class="stat-val" id="res-infected" style="color: var(--rose);">-</div>
                     </div>
                     <div class="card" style="padding: 16px;">
-                        <div class="stat-label">Veri Hacmi</div>
+                        <div class="stat-label" data-i18n="res_bytes_label">Veri Hacmi</div>
                         <div class="stat-val" id="res-bytes">-</div>
                     </div>
                     <div class="card" style="padding: 16px;">
-                        <div class="stat-label">Gecen Sure</div>
+                        <div class="stat-label" data-i18n="res_time_label">Geçen Süre</div>
                         <div class="stat-val" id="res-time">-</div>
                     </div>
                 </div>
@@ -723,12 +811,12 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Dosya</th>
-                                <th>Tehdit Sinifi</th>
-                                <th>Tespit Eden Motor</th>
-                                <th>Seviye</th>
-                                <th>Detay / Kural</th>
-                                <th>Durum</th>
+                                <th data-i18n="th_file">Dosya</th>
+                                <th data-i18n="th_threat_class">Tehdit Sınıfı</th>
+                                <th data-i18n="th_engine">Tespit Eden Motor</th>
+                                <th data-i18n="th_severity">Seviye</th>
+                                <th data-i18n="th_details">Detay / Kural</th>
+                                <th data-i18n="th_status">Durum</th>
                             </tr>
                         </thead>
                         <tbody id="scan-table-body">
@@ -1544,6 +1632,213 @@
     <div id="toast"></div>
 
     <script>
+        let currentLang = localStorage.getItem('project_guard_lang') || 'tr';
+
+        const I18N = {
+            tr: {
+                brand_subtitle: "Tehdit Kontrol Paneli",
+                topbar_status: "Windows 10/11 EDR Koruması Aktif",
+                topbar_coexistence: "Dual-Layer Defender Eşzamanlı Mod",
+                lang_label: "Dil / Language:",
+                nav_overview: "Genel Bakış",
+                nav_scanner: "Dosya Tarama",
+                nav_processes: "Süreç Avcısı",
+                nav_memory: "Bellek & Enjeksiyon",
+                nav_lolbas: "LOLBAS & Anomali",
+                nav_usb: "USB & Sürücü",
+                nav_persistence: "Kalıcılık (Autoruns)",
+                nav_canary: "Fidye Kapanı (Canary)",
+                nav_network: "Ağ & C2 Avcısı",
+                nav_quarantine: "Karantina Kasası",
+                nav_feeds: "Tehdit İstihbaratı",
+                nav_drivers: "Sürücü Avcısı (BYOVD)",
+                nav_fim: "FIM Sistem Bütünlüğü",
+                nav_scripts: "Komut & AMSI Avcısı",
+                nav_iocs: "Statik IOC Triyajı",
+                nav_eventlog: "Olay Günlüğü (EventLog)",
+                nav_triage: "Derin PE Triyajı & Entropi",
+                sidebar_defender: "Defender: Dual-Layer OK",
+                overview_title: "Sistem Güvenlik Durumu",
+                overview_desc: "21 adet çoklu motor, LOLBAS avcısı ve açık kaynak istihbarat akışının canlı sağlık tablosu.",
+                btn_update_signatures: "İmzaları Güncelle",
+                stat_total_sigs: "Kayıtlı Tehdit İmzası",
+                stat_total_sigs_desc: "MalwareBazaar, ThreatFox & ClamAV",
+                stat_c2_count: "Botnet C2 IP Blok Listesi",
+                stat_c2_count_desc: "Feodo Tracker aktif C2 ipleri",
+                stat_quar_count: "Karantina Kasası",
+                stat_quar_count_desc: "XOR 0x5A şifrelemeli kasa",
+                stat_defender_val: "Windows Defender Durumu",
+                stat_defender_active: "Aktif & Uyumlu",
+                stat_defender_desc: "Real-Time Protection devrede",
+                defender_banner_title: "Windows Defender Eşzamanlı Çift Katmanlı Koruma (Dual-Layer Shield)",
+                active: "Aktif",
+                defender_banner_desc: "MpCmdRun yerel tarayıcısı entegre. WdFilter Hata 225 atlama devrede. Karantina dosyaları XOR 0x5A ile korunuyor.",
+                defender_age_label: "İmza Güncelliği",
+                btn_refresh_telemetry: "Telemetriyi Yenile",
+                service_card_title: "Project Guard Windows Hizmeti (24/7 EDR Servisi)",
+                service_card_desc: "Windows SCM Servis Adı: ProjectGuard | 7/24 Gerçek Zamanlı Koruma (RTP) ve Fidye Kapanı devrede.",
+                btn_service_start: "Hizmeti Başlat",
+                btn_service_stop: "Durdur",
+                btn_service_refresh: "Yenile",
+                active_engines_title: "Aktif Tarama ve Tehdit Avlama Motorları (21 Motor)",
+                fatrab_title: "FatRab Bütçe Takipçisi",
+                fatrab_download: "Google Play'de İndir ↗",
+                fatrab_badge: "Geliştiriciden Tavsiye",
+                fatrab_desc: "Gelir, gider ve birikimlerinizi kolayca yönetin. Sade arayüzü ve akıllı analizleriyle kişisel bütçe asistanınız.",
+                fatrab_btn: "Google Play'de İncele ↗",
+                scanner_title: "Çoklu Motor Tarama Merkezi",
+                scanner_desc: "Hedef dosya veya klasörü YARA-X, Heuristic PE ve Defender motorları ile eş zamanlı tarayın.",
+                scanner_ph: "Taranacak dosya veya dizin yolu (Örn: C:\\Users\\...)",
+                scanner_btn: "Taramayı Başlat",
+                scanner_quar_label: "Tespit edilen zararlıları otomatik karantinaya al",
+                scanner_rec_label: "Alt dizinleri yinelemeli tara",
+                scanner_select_sample: "Mevcut Dizini Seç (.)",
+                scan_results_title: "Tarama Sonuçları",
+                res_scanned_label: "Taranan Dosya",
+                res_infected_label: "Bulunan Tehdit",
+                res_bytes_label: "Veri Hacmi",
+                res_time_label: "Geçen Süre",
+                th_file: "Dosya",
+                th_threat_class: "Tehdit Sınıfı",
+                th_engine: "Tespit Eden Motor",
+                th_severity: "Seviye",
+                th_details: "Detay / Kural",
+                th_status: "Durum",
+                quarantine_status_quarantined: "Karantinaya Alındı",
+                quarantine_status_detected: "Tespit Edildi (Karantinasız)",
+                no_threats_found: "Tebrikler! Hiçbir tehdit tespit edilmedi. Sistem temiz.",
+                scanning_in_progress: "Taranıyor...",
+                enter_scan_path: "Lütfen taranacak bir dosya veya dizin yolu giriniz.",
+                svc_status_running: "ÇALIŞIYOR (RUNNING) [OK]",
+                svc_status_stopped: "DURDURULDU (STOPPED)",
+                svc_status_not_installed: "YÜKLÜ DEĞİL (CLI: guard service install)",
+                svc_status_starting: "BAŞLATILIYOR (STARTING)",
+                svc_status_updated: "Windows Hizmet durumu güncellendi: ",
+                svc_started_ok: "Project Guard Hizmeti başarıyla başlatıldı!",
+                svc_stopped_ok: "Project Guard Hizmeti durduruldu."
+            },
+            en: {
+                brand_subtitle: "Threat Control Console",
+                topbar_status: "Windows 10/11 EDR Protection Active",
+                topbar_coexistence: "Dual-Layer Defender Coexistence Mode",
+                lang_label: "Language:",
+                nav_overview: "Overview",
+                nav_scanner: "File Scanner",
+                nav_processes: "Process Hunter",
+                nav_memory: "Memory & Injection",
+                nav_lolbas: "LOLBAS & Anomalies",
+                nav_usb: "USB & Removable Media",
+                nav_persistence: "Persistence (Autoruns)",
+                nav_canary: "Ransomware Canary",
+                nav_network: "Network & C2 Hunter",
+                nav_quarantine: "Quarantine Vault",
+                nav_feeds: "Threat Intelligence",
+                nav_drivers: "Driver Hunter (BYOVD)",
+                nav_fim: "FIM File Integrity",
+                nav_scripts: "Script & AMSI Hunter",
+                nav_iocs: "Static IOC Triage",
+                nav_eventlog: "EventLog Hunter",
+                nav_triage: "Deep PE Triage & Entropy",
+                sidebar_defender: "Defender: Dual-Layer OK",
+                overview_title: "System Security Overview",
+                overview_desc: "Live health status of 21 multi-engines, LOLBAS hunters, and open threat intelligence feeds.",
+                btn_update_signatures: "Update Signatures",
+                stat_total_sigs: "Registered Threat Signatures",
+                stat_total_sigs_desc: "MalwareBazaar, ThreatFox & ClamAV",
+                stat_c2_count: "Botnet C2 IP Blocklist",
+                stat_c2_count_desc: "Feodo Tracker active C2 IPs",
+                stat_quar_count: "Quarantine Vault",
+                stat_quar_count_desc: "XOR 0x5A encrypted vault",
+                stat_defender_val: "Windows Defender Status",
+                stat_defender_active: "Active & Compliant",
+                stat_defender_desc: "Real-Time Protection active",
+                defender_banner_title: "Windows Defender Dual-Layer Coexistence Shield",
+                active: "Active",
+                defender_banner_desc: "MpCmdRun native engine integrated. WdFilter Error 225 bypass active. Quarantined files secured via XOR 0x5A.",
+                defender_age_label: "Signature Age",
+                btn_refresh_telemetry: "Refresh Telemetry",
+                service_card_title: "Project Guard Windows Service (24/7 EDR Service)",
+                service_card_desc: "Windows SCM Service Name: ProjectGuard | 24/7 Real-Time Protection (RTP) & Canary traps active.",
+                btn_service_start: "Start Service",
+                btn_service_stop: "Stop",
+                btn_service_refresh: "Refresh",
+                active_engines_title: "Active Detection & Threat Hunting Engines (21 Engines)",
+                fatrab_title: "FatRab Budget Tracker",
+                fatrab_download: "Download on Google Play ↗",
+                fatrab_badge: "Developer Pick",
+                fatrab_desc: "Effortlessly manage income, expenses, and savings. Modern UI & smart analytics for your personal budget.",
+                fatrab_btn: "View on Google Play ↗",
+                scanner_title: "Multi-Engine Scan Center",
+                scanner_desc: "Scan target file or directory with YARA-X, Heuristic PE, and Defender engines simultaneously.",
+                scanner_ph: "File or directory path to scan (e.g. C:\\Users\\...)",
+                scanner_btn: "Start Scan",
+                scanner_quar_label: "Automatically quarantine detected threats",
+                scanner_rec_label: "Recursively scan subdirectories",
+                scanner_select_sample: "Select Current Folder (.)",
+                scan_results_title: "Scan Results",
+                res_scanned_label: "Scanned Files",
+                res_infected_label: "Threats Found",
+                res_bytes_label: "Data Volume",
+                res_time_label: "Elapsed Time",
+                th_file: "File",
+                th_threat_class: "Threat Classification",
+                th_engine: "Detecting Engine",
+                th_severity: "Severity",
+                th_details: "Details / Rule",
+                th_status: "Status",
+                quarantine_status_quarantined: "Quarantined & Neutralized",
+                quarantine_status_detected: "Detected (Not Quarantined)",
+                no_threats_found: "Congratulations! No threats detected. System is clean.",
+                scanning_in_progress: "Scanning...",
+                enter_scan_path: "Please enter a valid file or folder path to scan.",
+                svc_status_running: "RUNNING [OK]",
+                svc_status_stopped: "STOPPED",
+                svc_status_not_installed: "NOT INSTALLED (CLI: guard service install)",
+                svc_status_starting: "STARTING",
+                svc_status_updated: "Windows Service status updated: ",
+                svc_started_ok: "Project Guard Service started successfully!",
+                svc_stopped_ok: "Project Guard Service stopped."
+            }
+        };
+
+        function t(key) {
+            if (I18N[currentLang] && I18N[currentLang][key]) {
+                return I18N[currentLang][key];
+            }
+            if (I18N['tr'] && I18N['tr'][key]) {
+                return I18N['tr'][key];
+            }
+            return key;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('project_guard_lang', lang);
+
+            const btnTr = document.getElementById('lang-tr');
+            const btnEn = document.getElementById('lang-en');
+            if (btnTr && btnEn) {
+                btnTr.classList.toggle('active', lang === 'tr');
+                btnEn.classList.toggle('active', lang === 'en');
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (key && I18N[lang] && I18N[lang][key]) {
+                    el.innerText = I18N[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                const key = el.getAttribute('data-i18n-ph');
+                if (key && I18N[lang] && I18N[lang][key]) {
+                    el.placeholder = I18N[lang][key];
+                }
+            });
+
+            loadServiceStatus(false);
+        }
+
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.innerText = msg;
@@ -2830,11 +3125,11 @@ IEX $client.DownloadString($url)`;
                 if (st.is_installed) {
                     if (st.state === 'RUNNING') {
                         pill.className = 'pill pill-clean';
-                        pill.innerText = 'ÇALIŞIYOR (RUNNING) [OK]';
+                        pill.innerText = t('svc_status_running');
                         pill.style.color = 'var(--emerald)';
                     } else if (st.state === 'STOPPED') {
                         pill.className = 'pill pill-warning';
-                        pill.innerText = 'DURDURULDU (STOPPED)';
+                        pill.innerText = t('svc_status_stopped');
                         pill.style.color = 'var(--amber)';
                     } else {
                         pill.className = 'pill';
@@ -2842,22 +3137,22 @@ IEX $client.DownloadString($url)`;
                     }
                 } else {
                     pill.className = 'pill pill-threat';
-                    pill.innerText = 'YÜKLÜ DEĞİL (CLI: guard service install)';
+                    pill.innerText = t('svc_status_not_installed');
                     pill.style.color = 'var(--rose)';
                 }
-                if (showMsg) showToast('Windows Hizmet durumu güncellendi: ' + st.state);
+                if (showMsg) showToast(t('svc_status_updated') + st.state);
             } catch (e) {
                 console.error('Hizmet durumu sorgulanamadı:', e);
             }
         }
 
         async function startWindowsService() {
-            showToast('Windows Hizmeti başlatılıyor...');
+            showToast(t('svc_status_starting'));
             try {
                 const res = await fetch('/api/service/start', { method: 'POST' });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('Project Guard Hizmeti başarıyla başlatıldı!');
+                    showToast(t('svc_started_ok'));
                     loadServiceStatus();
                 } else {
                     alert('Hizmet başlatma uyarısı: ' + (data.error || 'Bilinmeyen hata (Yönetici yetkisi gerektirebilir).'));
@@ -2868,12 +3163,11 @@ IEX $client.DownloadString($url)`;
         }
 
         async function stopWindowsService() {
-            showToast('Windows Hizmeti durduruluyor...');
             try {
                 const res = await fetch('/api/service/stop', { method: 'POST' });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('Project Guard Hizmeti durduruldu.');
+                    showToast(t('svc_stopped_ok'));
                     loadServiceStatus();
                 } else {
                     alert('Hizmet durdurma uyarısı: ' + (data.error || 'Bilinmeyen hata'));
@@ -2883,8 +3177,10 @@ IEX $client.DownloadString($url)`;
             }
         }
 
-        // Ilk yukleme
+        // İlk yükleme (Language, Status & Service)
+        setLanguage(currentLang);
         loadStatus();
+        loadServiceStatus();
     </script>
 </body>
 </html>
