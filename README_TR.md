@@ -245,6 +245,24 @@ Tarayıcınızdan **`http://127.0.0.1:7890`** adresine giderek Dark Obsidian tem
 | `quarantine restore` | Karantinadaki dosyayı orijinal konumuna geri yükler | `guard quarantine restore <ID>` |
 | `service <action>` | Windows Hizmeti yönetimi (install, start, stop, status) | `guard service install` |
 | `ui` | Web Kontrol Merkezini başlatır | `guard ui --port 7890` |
+| `gui` | Standalone Windows masaüstü penceresi başlatır | `guard gui` |
+| `cisa-kev` | CISA Bilinen Aktif Zafiyetler (KEV BOD 22-01) denetimi yapar | `guard cisa-kev` |
+| `update-usom` | USOM (SGB-TR) yerli zararlı bağlantı ve C2 istihbaratını senkronize eder | `guard update-usom` |
+| `scan-stealers` | Shadowserver StealC infostealer süreç ve tarayıcı kasa taraması | `guard scan-stealers --kill` |
+| `cis-audit` | CIS Controls v8.1 & Windows Benchmark güvenlik sıkılaştırma denetimi | `guard cis-audit` |
+| `register-shell` | Windows Gezgini sağ tık "Project Guard ile Tara" menüsünü kaydeder | `guard register-shell` |
+| `epss-lookup <cve>` | FIRST.org EPSS ile zafiyet istismar olasılığını sorgular | `guard epss-lookup CVE-2024-21338` |
+| `update-sans` | SANS ISC DShield bal küpü saldırgan IP akışını senkronize eder | `guard update-sans --limit 25` |
+| `scan-sigma` | SigmaHQ açık kaynak kural standartlarıyla süreç ve telemetri tarar | `guard scan-sigma --kill` |
+| `update-spamhaus` | The Spamhaus Project DROP/eDROP kurşun geçirmez botnet ağlarını senkronize eder | `guard update-spamhaus` |
+| `update-urlhaus` | Abuse.ch URLhaus aktif zararlı indirme ve payload dağıtım bağlantılarını çeker | `guard update-urlhaus --limit 500` |
+| `lookup-url <url>` | Abuse.ch URLhaus ve yerel tehdit havuzunda bağlantı itibarını sorgular | `guard lookup-url http://malicious-loader.biz/payload.exe` |
+| `scan-stalkerware` | EFF Coalition Against Stalkerware & Citizen Lab yönergeleriyle casus yazılım taraması | `guard scan-stalkerware --kill` |
+| `privacy-status` | Kamera ve mikrofonu kullanan uygulamaları ve aktif çekim durumunu listeler | `guard privacy-status` |
+| `privacy-watch` | Donanım gizlilik koruması: Kamera açıldığında anında Toast bildirimi gönderir | `guard privacy-watch --interval 2` |
+| `mode <action>` | WinDebloat tarzı Oyun / İş Modu ve telemetri optimizasyonu (game, work, restore, status) | `guard mode game` |
+| `notify` | Windows İşlem Merkezine (Action Center) yerel Toast bildirimi gönderir | `guard notify -t "Uyari" -m "Mesaj"` |
+
 
 ---
 

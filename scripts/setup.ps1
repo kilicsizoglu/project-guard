@@ -212,7 +212,7 @@ try {
 
 # 8. Register 24/7 Windows Service
 if (-not $SkipService) {
-    Write-Host "[6/6] 7/24 Windows Arka Plan Hizmeti kaydediliyor..." -ForegroundColor Cyan
+    Write-Host "[6/7] 7/24 Windows Arka Plan Hizmeti kaydediliyor..." -ForegroundColor Cyan
     try {
         & "$destExe" service install
         & "$destExe" service start
@@ -221,7 +221,16 @@ if (-not $SkipService) {
         Write-Warning "Windows Hizmeti kaydedilemedi: $_"
     }
 } else {
-    Write-Host "[6/6] Hizmet kurulumu atlandi (--SkipService)." -ForegroundColor Yellow
+    Write-Host "[6/7] Hizmet kurulumu atlandi (--SkipService)." -ForegroundColor Yellow
+}
+
+# 9. Register Windows Explorer Context Menu
+Write-Host "[7/7] Windows Explorer Sag Tik Menusu kaydediliyor..." -ForegroundColor Cyan
+try {
+    & "$destExe" register-shell
+    Write-Host "  -> Explorer Sag Tik Menusu ('Project Guard ile Tara') kaydedildi. [OK]" -ForegroundColor Green
+} catch {
+    Write-Warning "Sag tik menusu kaydedilemedi: $_"
 }
 
 Write-Host ""

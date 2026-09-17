@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Guard Docker EDR</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Top Header -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="logo-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-shield">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>PROJECT GUARD</h1>
+          <span>Docker Desktop EDR & Container Security Suite</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="host-status" id="host-status">
+          <span class="status-dot"></span>
+          <span id="host-status-text">HOST EDR BAĞLANIYOR...</span>
+        </div>
+        <button class="btn btn-primary" id="btn-scan-all">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          Kapsamlı Tara
+        </button>
+      </div>
+    </header>
+
+    <!-- Metrics Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-title">Çalışan Konteynerler</div>
+        <div class="metric-value" id="metric-containers">0</div>
+        <div class="metric-hint">Docker Daemon Aktif</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Yerel İmaj Sayısı</div>
+        <div class="metric-value" id="metric-images">0</div>
+        <div class="metric-hint">Taranmaya Hazır</div>
+      </div>
+      <div class="metric-card alert">
+        <div class="metric-title">İmtiyazlı Riskler</div>
+        <div class="metric-value" id="metric-risks">0</div>
+        <div class="metric-hint">Privileged / HostPID Uyarısı</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-title">CISA KEV Uyumluluğu</div>
+        <div class="metric-value" id="metric-kev">Uyumlu</div>
+        <div class="metric-hint">BOD 22-01 Direktifi</div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="containers">Konteyner Tehdit Denetimi</button>
+      <button class="tab-btn" data-tab="images">İmaj & Paket Zafiyetleri</button>
+      <button class="tab-btn" data-tab="hardening">Docker CIS Sertleştirme (Hardening)</button>
+      <button class="tab-btn" data-tab="host-edr">Host EDR Senkronizasyonu</button>
+    </nav>
+
+    <!-- Tab 1: Containers -->
+    <main class="tab-content active" id="tab-containers">
+      <div class="section-card">
+        <div class="card-header">
+          <h2>Aktif Konteyner Güvenlik Durumu</h2>
+          <span class="card-desc">İmtiyaz ihlalleri, açık portlar ve şüpheli süreçler denetleniyor</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Konteyner Adı</th>
+                <th>İmaj</th>
+                <th>Durum</th>
+                <th>Portlar</th>
+                <th>Güvenlik Derecesi</th>
+                <th>Eylemler</th>
+              </tr>
+            </thead>
+            <tbody id="containers-tbody">
+              <tr>
+                <td colspan="6" class="loading-cell">Konteyner verileri yükleniyor...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Tab 2: Images -->
+    <main class="tab-content" id="tab-images">
+      <div class="section-card">
+        <div class="card-header">
+          <h2>Yerel Docker İmajları ve CVE / KEV Taraması</h2>
+          <span class="card-desc">Kötü amaçlı cryptominer, arka kapı ve bilinen zafiyet eşleşmeleri</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>İmaj Etiketi</th>
+                <th>İmaj ID</th>
+                <th>Boyut</th>
+                <th>Oluşturulma</th>
+                <th>Tehdit Durumu</th>
+              </tr>
+            </thead>
+            <tbody id="images-tbody">
+              <tr>
+                <td colspan="5" class="loading-cell">İmaj verileri yükleniyor...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Tab 3: Hardening -->
+    <main class="tab-content" id="tab-hardening">
+      <div class="section-card">
+        <div class="card-header">
+          <h2>Docker CIS Benchmark & Konfigürasyon Sertleştirmesi</h2>
+          <span class="card-desc">Docker Daemon ve konteyner orkestrasyonu en iyi güvenlik pratikleri</span>
+        </div>
+        <div class="checklist" id="hardening-list">
+          <div class="check-item pass">
+            <span class="badge pass">GEÇTİ</span>
+            <div class="check-info">
+              <strong>İmtiyazlı Konteyner Kısıtlaması</strong>
+              <p>Hiçbir konteyner gereksiz <code>--privileged</code> bayrağıyla ana bilgisayar çekirdeğine doğrudan erişmemelidir.</p>
+            </div>
+          </div>
+          <div class="check-item pass">
+            <span class="badge pass">GEÇTİ</span>
+            <div class="check-info">
+              <strong>Host IPC ve PID İzolasyonu</strong>
+              <p>Konteynerler ana makinenin PID tablosunu paylaşmamalıdır (<code>--pid=host</code> kapalı).</p>
+            </div>
+          </div>
+          <div class="check-item warn">
+            <span class="badge warn">ÖNERİ</span>
+            <div class="check-info">
+              <strong>Salt Okunur Kök Dosya Sistemi (Read-Only Rootfs)</strong>
+              <p>Fidye yazılımlarının konteyner içinde dosya manipülasyonunu engellemek için kök dosya sistemi salt okunur çalıştırılmalıdır.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Tab 4: Host EDR -->
+    <main class="tab-content" id="tab-host-edr">
+      <div class="section-card">
+        <div class="card-header">
+          <h2>Project Guard Host Makine Entegrasyonu</h2>
+          <span class="card-desc">Ana bilgisayardaki 7/24 Project Guard EDR servisi ile doğrudan telemetri köprüsü</span>
+        </div>
+        <div class="host-info-grid">
+          <div class="info-box">
+            <span class="box-label">Yerel EDR API Adresi</span>
+            <span class="box-value">http://host.docker.internal:7890</span>
+          </div>
+          <div class="info-box">
+            <span class="box-label">Bağlantı Protokolü</span>
+            <span class="box-value">RESTful JSON / WebSockets</span>
+          </div>
+          <div class="info-box">
+            <span class="box-label">Canary & Honeytoken Kalkanı</span>
+            <span class="box-value text-emerald">Aktif (CISA Standartı)</span>
+          </div>
+          <div class="info-box">
+            <span class="box-label">BYOVD Sürücü Koruması</span>
+            <span class="box-value text-emerald">Devrede (LOLDrivers 2026)</span>
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-secondary" id="btn-open-host-soc">Masaüstü Web SOC Konsolunu Aç</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -98,7 +98,7 @@ Traditional third-party antivirus software registers with Windows Security Cente
 
 ---
 
-## 3. The 21 Security Engines Breakdown
+## 3. The 26 Security Engines Breakdown
 
 | Category | Engine Name | Detection Methodology | ATT&CK Reference |
 |---|---|---|---|
@@ -109,24 +109,69 @@ Traditional third-party antivirus software registers with Windows Security Cente
 | | `FeodoTrackerFeed` | Real-time Dridex/Emotet/Qakbot C2 IP verification | T1573 (Encrypted Channel) |
 | | `ClamAvEngine` | Native ClamAV `.hdb` hash database & clamd socket | T1027 (Obfuscation) |
 | | `YaraForgeSync` | Curated YARA rulesets for Cobalt Strike, APTs & Mimikatz | T1003 (Credential Dumping) |
+| | `CisaKevEngine` | CISA Known Exploited Vulnerabilities (BOD 26-04) catalog audit | T1068, T1203, T1210 |
+| | `UsomFeed` | T.C. Siber Güvenlik Başkanlığı (USOM) yerli tehdit istihbaratı ve C2 beslemesi | T1071, T1566 |
+| | `EpssEngine` | FIRST.org Exploit Prediction Scoring System (EPSS) sömürü olasılığı analizi | T1190, T1203 |
+| | `SansDShieldFeed` | SANS Internet Storm Center (ISC) DShield bal küpü küresel saldırgan IP akışı | T1071, T1595 |
+| | `SpamhausDropFeed`| The Spamhaus Project DROP/eDROP kurşun geçirmez botnet & C2 alt ağ akışı | T1071, T1584 |
+| | `UrlhausFeed` | Abuse.ch URLhaus aktif zararlı indirme ve payload dağıtım bağlantıları | T1566.002, T1204 |
 | **Heuristic & PE** | `PeTriager` | Shannon Entropy calculation per section (0.0 - 8.0) | T1027.002 (Software Packing) |
 | | `WXViolationEngine` | Identification of dual `WRITE` + `EXECUTE` sections | T1055 (Process Injection) |
 | | `CapaCapabilityEngine`| Behavioral API pattern scoring for ransomware & evasion | T1486 (Data Encrypted) |
-| | `DriverHunter` | LOLDrivers hash list & vulnerable kernel drivers | T1068, T1543 (BYOVD) |
+| | `DriverHunter` | LOLDrivers hash list & vulnerable kernel drivers (BYOVD 2026) | T1068, T1543 (BYOVD) |
 | | `UpxCrypterEngine` | Detection of packed executables and modified headers | T1027.002 (Packing) |
+| | `SupplyChainScanner`| OpenSSF & OWASP A03 yazılım tedarik zinciri ve kötücül script analizi | T1195.001, T1059 |
 | **Memory & Script** | `ProcessMemoryScanner`| Live `VirtualQueryEx` unbacked `PAGE_EXECUTE_READWRITE` | T1055.001 (DLL Injection) |
 | | `ScriptHunter` | AST & regex parsing of PowerShell / VBScript / Batch | T1059 (Command & Script) |
 | | `AmsiBypassDetector` | Detection of `amsiInitFailed` and memory patch patterns | T1562.001 (Disable Tools) |
-| | `LolbasHunter` | Parent-child anomalies (`mshta`, `rundll32`, `certutil`) | T1218 (System Binary Proxy) |
+| | `LolbasHunter` | EDR-Kill, Anti-Recovery (`vssadmin`, `bcdedit`), Proxy Execution | T1218, T1490, T1562.001 |
+| | `StealerHunter` | Shadowserver StealC infostealer tarayıcı ve cüzdan kasa koruması | T1555.003, T1005 |
+| | `SigmaEngine` | SigmaHQ açık kaynak kural standartları ile süreç ve komut satırı analizi | T1059, T1098, T1490 |
+| | `StalkerwareHunter`| EFF Coalition Against Stalkerware & Citizen Lab casus yazılım ve takip avcısı | T1056.001, T1113 |
 | | `IocExtractor` | In-flight decoding of Base64, Bitcoin wallets, and IPs | T1027 (Deobfuscation) |
 | **Host Defense** | `EventLogHunter` | Real-time monitoring of Windows Event Log ID 4104/1102 | T1059.001, T1070 (Logs) |
-| | `CanaryManager` | Strategic honeypot files monitoring ransomware trips | T1486 (Ransomware Defense) |
+| | `CanaryManager` | CISA Cyber Decoys (Sept 2026): Honeytokens, Vaults, Breadcrumbs | T1486, T1552, MITRE Engage |
 | | `FimEngine` | Cryptographic SHA-256 integrity checks on hosts/system | T1565 (Data Manipulation) |
+| | `CisAuditEngine` | Center for Internet Security (CIS) Controls v8.1 ve Windows Benchmark | Enterprise Hardening |
 | | `UsbMonitor` | Plug-and-play removable drive scanning for LNK worms | T1091 (Replication Media) |
+| | `PrivacyGuard` | Windows ConsentStore donanım kamera & mikrofon aktif erişim denetimi | T1125, T1123 |
+| | `SystemModeEngine` | WinDebloat tarzı Oyun / İş Modu ve telemetri optimizasyonu (Rollback) | Performance & Privacy |
+
 
 ---
 
-## 4. Windows Service Architecture & Lifecycle
+## 4. Extensions & Ecosystem Integration
+
+### Chrome Extension (Manifest V3 - Web Shield)
+Located at `extensions/chrome/`:
+- **Real-Time Phishing & C2 Interceptor**: Inspects active tab navigation against malicious TLDs, raw IP connection patterns, and credential-harvesting keywords.
+- **Dual-Extension Lure Detection**: Content script highlights disguised files (e.g. `.docx.exe`, `.pdf.vbs`) and flags insecure HTTP credential forms.
+- **REST API Synchronization**: Polls Project Guard desktop daemon on `http://localhost:7890` with glassmorphic SOC popup.
+
+### Docker Desktop Extension (Container & Image Security EDR)
+Located at `extensions/docker/`:
+- **Runtime Privilege & Vulnerability Inspection**: Interacts with `window.ddClient` to list running containers and detects high-risk flags (`--privileged`, `hostPID`, suspicious C2 ports 4444/1337).
+- **Image Scanning & CIS Hardening Benchmark**: Evaluates local Docker images for outdated bases and provides interactive container security compliance checklists.
+- **Host EDR Bridge**: Seamlessly synchronizes container telemetry with host daemon at `host.docker.internal:7890`.
+
+---
+
+## 5. Windows Native Integration & Shell Ecosystem
+
+Project Guard provides deep, native integration across the Windows operating system:
+1. **Windows Explorer Shell Context Menu**:
+   - Right-click scanning registered in Registry (`HKCU\Software\Classes\*\shell\ProjectGuardScan` and `Directory\shell\ProjectGuardScan`).
+   - Enables instant file and folder analysis directly from Windows File Explorer with custom security icons.
+2. **Native Windows Toast Notifications**:
+   - Dispatches non-blocking visual and audio alert toasts into Windows 10/11 Action Center upon malware detection or canary tripping.
+3. **Windows Service Control Manager (SCM)**:
+   - 24/7 background SYSTEM daemon with multi-stage failure restart recovery policies (5s, 10s, 20s).
+4. **Volume Shadow Copy & Anti-Ransomware Guard**:
+   - Active interception of VSS tampering commands (`vssadmin delete shadows`, `wmic shadowcopy delete`).
+
+---
+
+## 6. Windows Service Architecture & Lifecycle
 
 The background service integrates with the Windows **Service Control Manager (SCM)** using standard system APIs (`sc.exe` and native Windows threading).
 
@@ -158,7 +203,7 @@ When registered via `project-guard service install`, Project Guard configures th
 
 ---
 
-## 5. Concurrency & Memory Safety Guarantees
+## 6. Concurrency & Memory Safety Guarantees
 
 1. **Zero-Cost Abstractions & No Garbage Collector**:
    Written in **Rust 2024 Edition**, memory safety is mathematically enforced by the compiler's affine type system. No data races, no memory leaks, and no use-after-free conditions are possible in safe blocks.
@@ -171,7 +216,7 @@ When registered via `project-guard service install`, Project Guard configures th
 
 ---
 
-## 6. Directory Layout & Data Storage
+## 7. Directory Layout & Data Storage
 
 All operational data is maintained in `.project_guard/`:
 

@@ -528,6 +528,136 @@
             z-index: 1000;
             font-size: 13px;
         }
+
+        /* Settings Grid & Controls */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .setting-card {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .setting-card:hover {
+            border-color: rgba(6, 182, 212, 0.35);
+            background: rgba(15, 23, 42, 0.85);
+        }
+
+        .setting-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .setting-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            line-height: 1.35;
+        }
+
+        .switch-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: .25s ease;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .slider-round:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .25s ease;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        }
+
+        .switch-toggle input:checked + .slider-round {
+            background-color: #06b6d4;
+            border-color: #0891b2;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+        }
+
+        .switch-toggle input:checked + .slider-round:before {
+            transform: translateX(20px);
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-height: 48px;
+            margin-top: 8px;
+        }
+
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.35);
+            color: #e0f2fe;
+            font-size: 11.5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: monospace;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+            color: #94a3b8;
+            font-size: 13px;
+            transition: color 0.15s;
+        }
+
+        .tag-remove:hover {
+            color: #f43f5e;
+        }
     </style>
 </head>
 <body>
@@ -594,6 +724,21 @@
             <div class="nav-item" onclick="switchTab('tab-triage')">
                 <span class="nav-icon">&#128300;</span> <span data-i18n="nav_triage">Derin PE Triyajı & Entropi</span>
             </div>
+            <div class="nav-item" onclick="switchTab('tab-privacy')">
+                <span class="nav-icon">&#128247;</span> <span data-i18n="nav_privacy">Kamera & Donanım Gizliliği</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-mode')">
+                <span class="nav-icon">&#9889;</span> <span data-i18n="nav_mode">Oyun & İş Modu (Debloat)</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-foundation')">
+                <span class="nav-icon">&#127963;</span> <span data-i18n="nav_foundation">Vakıf İstihbaratı & CIS</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-settings')">
+                <span class="nav-icon">&#9881;</span> <span data-i18n="nav_settings">Sistem & Koruma Ayarları</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-overview'); toggleChromeGuideModal();" title="Chrome Web Kalkanı Eklentisini Paketle / Yükle">
+                <span class="nav-icon">&#127760;</span> <span data-i18n="nav_chrome_ext">Chrome Web Kalkanı</span>
+            </div>
         </div>
 
         <div class="system-badge" id="sidebar-defender-badge" onclick="switchTab('tab-overview')" style="cursor:pointer;" title="Windows Defender Eşzamanlı Çalışma Detayları">
@@ -604,7 +749,7 @@
         <!-- FatRab App Recommendation (Subtle & Non-Intrusive) -->
         <div style="margin-top: 12px; padding: 8px 10px; background: rgba(52, 168, 83, 0.07); border: 1px solid rgba(52, 168, 83, 0.22); border-radius: 8px; transition: all 0.2s ease;">
             <a href="https://play.google.com/store/apps/details?id=com.fatrab.budget" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
-                <img src="/assets/fatrab-icon.png" alt="FatRab" style="width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;" onerror="this.src='play-icon-512.png'" />
+                <img src="/assets/fatrab-icon.png" alt="FatRab" style="width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0; object-fit: cover;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' rx=\'22\' fill=\'%237C5CFC\'/><path d=\'M25 65 h12 v20 h-12 z M44 50 h12 v35 h-12 z M63 35 h12 v50 h-12 z\' fill=\'white\'/><circle cx=\'70\' cy=\'22\' r=\'14\' fill=\'%23FBBF24\'/><circle cx=\'70\' cy=\'22\' r=\'9\' fill=\'%23F59E0B\'/></svg>';" />
                 <div style="text-align: left; line-height: 1.25; min-width: 0;">
                     <div style="font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-i18n="fatrab_title">FatRab Bütçe Takipçisi</div>
                     <div style="font-size: 10px; color: #34A853; font-weight: 500;" data-i18n="fatrab_download">Google Play'de İndir ↗</div>
@@ -622,6 +767,9 @@
                 <span class="topbar-chip">
                     <span class="pulse-dot" style="width:6px; height:6px;"></span>
                     <span data-i18n="topbar_status">Windows 10/11 EDR Koruması Aktif</span>
+                </span>
+                <span class="topbar-chip" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #10b981;" title="Uygulama simgesi Windows görev çubuğu bildirim alanında (System Tray) çalışmaktadır.">
+                    <span style="font-size: 11px;">🛡️</span> <span data-i18n="topbar_tray">Sistem Tepsisi Aktif</span>
                 </span>
                 <span class="topbar-info" data-i18n="topbar_coexistence">Dual-Layer Defender Eşzamanlı Mod</span>
             </div>
@@ -737,6 +885,63 @@
                 </div>
             </div>
 
+            <!-- Chrome Web Shield & System Tray Integration Card -->
+            <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(168, 85, 247, 0.35); background: rgba(168, 85, 247, 0.05); box-shadow: 0 8px 32px rgba(168, 85, 247, 0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="font-size: 26px; width: 44px; height: 44px; border-radius: 10px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);">
+                            &#127760;
+                        </div>
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                <span data-i18n="chrome_card_title">Project Guard Chrome Web Shield (Web Kalkanı) & Sistem Tepsisi</span>
+                                <span class="pill pill-clean" style="background: rgba(168, 85, 247, 0.2); color: var(--purple);" id="chrome-ext-badge">Manifest V3 Hazır</span>
+                                <span class="pill pill-clean" style="background: rgba(16, 185, 129, 0.15); color: var(--emerald);" id="tray-ext-badge">&#128737; Tepsi Aktif</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;" data-i18n="chrome_card_desc">
+                                Tarayıcı seviyesinde kimlik avı (phishing), şüpheli C2 IP bağlantıları ve SocGholish sahte güncelleme tuzaklarına karşı aktif koruma. Yerel port 7890 EDR soketi ile tam senkronizedir.
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <a href="/api/extension/download" class="btn" style="background: linear-gradient(135deg, #a855f7, #7c3aed); text-decoration: none; padding: 7px 16px; font-size: 12.5px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;" id="btn-download-ext">
+                            <span>&#128230;</span> <span data-i18n="btn_download_extension">Eklentiyi İndir (.zip)</span>
+                        </a>
+                        <button class="btn-secondary" style="padding: 7px 14px; font-size: 12px; border-radius: 8px; cursor: pointer;" onclick="packageExtensionViaApi()" id="btn-repackage-ext">
+                            <span>&#9889;</span> <span data-i18n="btn_repackage_extension">Yeniden Paketle</span>
+                        </button>
+                        <button class="btn-secondary" style="padding: 7px 14px; font-size: 12px; border-radius: 8px; cursor: pointer;" onclick="toggleChromeGuideModal()">
+                            <span>&#128214;</span> <span data-i18n="btn_install_guide">Kurulum Kılavuzu</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chrome Extension Install Guide Accordion / Modal Drawer -->
+                <div id="chrome-guide-drawer" style="display: none; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08);">
+                    <div style="font-size: 13.5px; font-weight: 600; color: #fff; margin-bottom: 10px;" data-i18n="chrome_guide_heading">
+                        Google Chrome'a Yükleme Adımları (Geliştirici Modu):
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                        <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="color: var(--purple); font-weight: 700; font-size: 12px; margin-bottom: 4px;">1. UZANTI SAYFASINI AÇIN</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Chrome adres çubuğuna <code style="color:var(--cyan); background:rgba(6,182,212,0.1); padding:1px 5px; border-radius:4px;">chrome://extensions/</code> yazın ve Enter'a basın.</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="color: var(--purple); font-weight: 700; font-size: 12px; margin-bottom: 4px;">2. GELİŞTİRİCİ MODUNU AÇIN</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Sayfanın sağ üst köşesinde bulunan <strong>"Geliştirici modu"</strong> anahtarını aktif hale getirin.</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="color: var(--purple); font-weight: 700; font-size: 12px; margin-bottom: 4px;">3. PAKETLENMEMİŞ ÖĞE YÜKLE</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Sol üstteki <strong>"Paketlenmemiş öğe yükle"</strong> butonuna tıklayın ve <code style="color:var(--cyan); background:rgba(6,182,212,0.1); padding:1px 5px; border-radius:4px;">extensions\chrome</code> klasörünü seçin.</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="color: var(--emerald); font-weight: 700; font-size: 12px; margin-bottom: 4px;">4. KORUMA DEVREDE!</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Project Guard Web Kalkanı ikonu belirecek ve yeşil <span style="color:var(--emerald); font-weight:bold;">ON</span> rozeti ile EDR soketine bağlanacaktır.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <h2 style="font-size: 17px; margin-bottom: 15px; color: #fff;" data-i18n="active_engines_title">Aktif Tarama ve Tehdit Avlama Motorları (21 Motor)</h2>
             <div class="engine-grid" id="engine-container">
                 <!-- Javascript ile doldurulur -->
@@ -746,7 +951,7 @@
             <div class="card" style="margin-top: 24px; border: 1px solid rgba(52, 168, 83, 0.25); background: linear-gradient(135deg, rgba(52, 168, 83, 0.04), rgba(6, 182, 212, 0.02));">
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
                     <div style="display: flex; align-items: center; gap: 14px;">
-                        <img src="/assets/fatrab-icon.png" alt="FatRab Logo" style="width: 44px; height: 44px; border-radius: 11px; box-shadow: 0 4px 12px rgba(52, 168, 83, 0.2); object-fit: cover;" onerror="this.src='play-icon-512.png'" />
+                        <img src="/assets/fatrab-icon.png" alt="FatRab Logo" style="width: 44px; height: 44px; border-radius: 11px; box-shadow: 0 4px 12px rgba(52, 168, 83, 0.2); object-fit: cover;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' rx=\'22\' fill=\'%237C5CFC\'/><path d=\'M25 65 h12 v20 h-12 z M44 50 h12 v35 h-12 z M63 35 h12 v50 h-12 z\' fill=\'white\'/><circle cx=\'70\' cy=\'22\' r=\'14\' fill=\'%23FBBF24\'/><circle cx=\'70\' cy=\'22\' r=\'9\' fill=\'%23F59E0B\'/></svg>';" />
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span style="font-size: 14px; font-weight: 700; color: #fff;" data-i18n="fatrab_title">FatRab Bütçe Takipçisi</span>
@@ -1635,7 +1840,1001 @@
             </div>
         </div>
 
-    </main>
+        <!-- TAB 18: PRIVACY GUARD (CAMERA & MIC) -->
+        <div id="tab-privacy" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title" data-i18n="privacy_title">Kamera & Donanım Gizlilik Monitörü</h1>
+                    <p class="page-desc" data-i18n="privacy_desc">Windows ConsentStore donanım telemetrisi ile gizli kamera ve mikrofon erişimlerini denetleyin.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" onclick="loadPrivacy()">
+                        <span>&#8635;</span> <span data-i18n="btn_privacy_refresh">Durumu Yenile</span>
+                    </button>
+                    <button class="btn-secondary" onclick="sendTestPrivacyToast()">
+                        <span>&#128680;</span> <span data-i18n="btn_privacy_test_toast">Test Bildirimi Gönder</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid" style="margin-bottom: 22px;">
+                <div class="stat-card">
+                    <div class="stat-label" data-i18n="stat_webcam_status">Kamera (Webcam) Durumu</div>
+                    <div class="stat-value" id="stat-webcam-active" style="color: var(--emerald); font-size: 20px;">Temiz (Boşta)</div>
+                    <div class="stat-desc" id="stat-webcam-desc">Aktif kayıt yok</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" data-i18n="stat_mic_status">Mikrofon Durumu</div>
+                    <div class="stat-value" id="stat-mic-active" style="color: var(--emerald); font-size: 20px;">Temiz (Boşta)</div>
+                    <div class="stat-desc" id="stat-mic-desc">Aktif dinleme yok</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" data-i18n="stat_suspicious_privacy">Şüpheli Donanım Erişimi</div>
+                    <div class="stat-value" id="stat-suspicious-count" style="color: var(--cyan);">0</div>
+                    <div class="stat-desc" data-i18n="stat_suspicious_privacy_desc">Temp / Kabuk veya Casus Taktikleri</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" data-i18n="stat_total_devices">Kayıtlı İzin Sayısı</div>
+                    <div class="stat-value" id="stat-total-privacy-records">0</div>
+                    <div class="stat-desc" data-i18n="stat_total_devices_desc">Webcam & Mikrofon Kaydı</div>
+                </div>
+            </div>
+
+            <!-- Privacy Access Records Table -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <h3 style="color: #fff; font-size: 15px;" data-i18n="privacy_table_title">Donanım İzin ve Canlı Erişim Günlüğü</h3>
+                    <span id="privacy-status-pill" class="pill pill-clean">ConsentStore Aktif</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cihaz</th>
+                                <th>Uygulama / Süreç</th>
+                                <th>Yürütülebilir Dosya Yolu</th>
+                                <th>Anlık Durum</th>
+                                <th>Güvenlik Değerlendirmesi</th>
+                                <th>Son Kullanım Zamanı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="privacy-table-body">
+                            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 19: SYSTEM MODE (WINDEBLOAT & GAMING) -->
+        <div id="tab-mode" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title" data-i18n="mode_title">Sistem Modu & WinDebloat</h1>
+                    <p class="page-desc" data-i18n="mode_desc">Oyunlar için düşük gecikme, iş için telemetri ve Bing temizliği, tek tıkla geri alma.</p>
+                </div>
+                <button class="btn" onclick="loadSystemMode()">
+                    <span>&#8635;</span> <span data-i18n="btn_mode_refresh">Durumu Yenile</span>
+                </button>
+            </div>
+
+            <!-- Active Mode Hero Banner -->
+            <div class="card" style="margin-bottom: 22px; border-color: rgba(6, 182, 212, 0.4); background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(17, 24, 39, 0.9));">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--cyan); font-weight: 700; margin-bottom: 4px;" data-i18n="active_mode_label">MEVCUT AKTİF SİSTEM PROFİLİ</div>
+                        <h2 id="current-mode-title" style="color: #fff; font-size: 22px; font-weight: 700;">Standart Windows Modu</h2>
+                        <div id="current-mode-backup-status" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Yedek Durumu: Orijinal Windows ayarları kaydedilmeye hazır.</div>
+                    </div>
+                    <div id="current-mode-badge" class="pill pill-clean" style="font-size: 14px; padding: 6px 14px;">⚪ [VARSAYILAN]</div>
+                </div>
+            </div>
+
+            <!-- Mode Selector Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 24px;">
+                <!-- Card 1: Game Mode -->
+                <div class="card" style="border: 1px solid rgba(6, 182, 212, 0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 24px; margin-bottom: 8px;">🎮</div>
+                        <h3 style="color: #fff; font-size: 16px; margin-bottom: 8px;" data-i18n="mode_game_title">Oyun Modu (Ultra Düşük Gecikme)</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;" data-i18n="mode_game_desc">
+                            Maksimum FPS ve minimum girdi gecikmesi. Arka plan servislerinin CPU önceliğini keser, ağ paket kısıtlamasını kaldırır.
+                        </p>
+                        <ul style="font-size: 11.5px; color: var(--cyan); margin-left: 18px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px;">
+                            <li>SystemResponsiveness = 0 (Gecikmesiz)</li>
+                            <li>NetworkThrottlingIndex = 0xFFFFFFFF (Paket kuyruksuz)</li>
+                            <li>GPU Priority = 8 (En Yüksek Grafik Önceliği)</li>
+                            <li>Tam Ekran Windows AutoGameMode Devrede</li>
+                        </ul>
+                    </div>
+                    <button class="btn" onclick="setSystemMode('game')" style="width: 100%; justify-content: center;">
+                        <span>🎮</span> <span data-i18n="btn_apply_game_mode">Oyun Modunu Aç</span>
+                    </button>
+                </div>
+
+                <!-- Card 2: Work & Privacy Mode -->
+                <div class="card" style="border: 1px solid rgba(168, 85, 247, 0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 24px; margin-bottom: 8px;">💼</div>
+                        <h3 style="color: #fff; font-size: 16px; margin-bottom: 8px;" data-i18n="mode_work_title">İş & Gizlilik Modu (WinDebloat)</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;" data-i18n="mode_work_desc">
+                            Gereksiz telemetri ve tüketici şişkinliklerini kaldırır. Başlat menüsü web aramalarını ve reklam takibini sonlandırır.
+                        </p>
+                        <ul style="font-size: 11.5px; color: var(--purple); margin-left: 18px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px;">
+                            <li>Başlat Menüsü Bing Arama & Reklamları Kapalı</li>
+                            <li>Windows Reklam Kimliği (Advertising ID) Engelli</li>
+                            <li>DiagTrack & dmwappushservice Telemetrisi Durduruldu</li>
+                            <li>Kilit ekranı önerileri ve sponsorlu uygulamalar engelli</li>
+                        </ul>
+                    </div>
+                    <button class="btn-secondary" onclick="setSystemMode('work')" style="width: 100%; justify-content: center; background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.4); color: #c084fc;">
+                        <span>💼</span> <span data-i18n="btn_apply_work_mode">İş & Gizlilik Modunu Aç</span>
+                    </button>
+                </div>
+
+                <!-- Card 3: Restore Defaults -->
+                <div class="card" style="border: 1px solid rgba(245, 158, 11, 0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 24px; margin-bottom: 8px;">🔄</div>
+                        <h3 style="color: #fff; font-size: 16px; margin-bottom: 8px;" data-i18n="mode_restore_title">Varsayılan Mod (Geri Al)</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;" data-i18n="mode_restore_desc">
+                            Yapılan tüm değişiklikleri güvenle geri alır. Kayıt defterini ve Windows servislerini orijinal fabrika ayarlarına döndürür.
+                        </p>
+                        <ul style="font-size: 11.5px; color: var(--amber); margin-left: 18px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px;">
+                            <li>Orijinal yedek (.project_guard/mode_backup.json) yüklenir</li>
+                            <li>SystemResponsiveness = 20 değerine döner</li>
+                            <li>NetworkThrottlingIndex = 10 değerine döner</li>
+                            <li>DiagTrack telemetri servisi otomatik başlatmaya döner</li>
+                        </ul>
+                    </div>
+                    <button class="btn-secondary" onclick="setSystemMode('restore')" style="width: 100%; justify-content: center; background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); color: var(--amber);">
+                        <span>🔄</span> <span data-i18n="btn_restore_defaults">Varsayılana Sıfırla (Rollback)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Metrics Table -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;" data-i18n="mode_metrics_title">Windows Kayıt Defteri Ayarları ve Canlı Değerler</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parametre / Gösterge</th>
+                                <th>Mevcut Değer</th>
+                                <th>Açıklama / Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mode-metrics-body">
+                            <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:20px;">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Applied Log Box -->
+            <div class="card" id="mode-changes-box" style="display: none;">
+                <h3 style="color: var(--cyan); font-size: 14px; margin-bottom: 10px;" data-i18n="mode_changes_title">Son Uygulanan İşlemler ve Kayıt Defteri Güncellemeleri</h3>
+                <ul id="mode-changes-list" style="margin-left: 20px; font-size: 12.5px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;"></ul>
+            </div>
+        </div>
+
+        <!-- TAB 20: FOUNDATION INTEL & CIS AUDIT -->
+        <div id="tab-foundation" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title" data-i18n="foundation_title">Vakıf İstihbaratı & Gelişmiş Denetimler</h1>
+                    <p class="page-desc" data-i18n="foundation_desc">CIS Controls v8.1, FIRST.org EPSS v3, Abuse.ch URLhaus, EFF Stalkerware Hunter ve SigmaHQ davranış taraması.</p>
+                </div>
+            </div>
+
+            <!-- Foundation Subnav Pills -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px;">
+                <button class="btn" id="btn-sub-cis" onclick="switchFoundationSub('cis')">🏛️ CIS Benchmark v8.1</button>
+                <button class="btn-secondary" id="btn-sub-epss" onclick="switchFoundationSub('epss')">🎯 FIRST.org EPSS v3</button>
+                <button class="btn-secondary" id="btn-sub-urlhaus" onclick="switchFoundationSub('urlhaus')">🌐 Abuse.ch URLhaus</button>
+                <button class="btn-secondary" id="btn-sub-stalkerware" onclick="switchFoundationSub('stalkerware')">🕵️ EFF Stalkerware Hunter</button>
+                <button class="btn-secondary" id="btn-sub-sigma" onclick="switchFoundationSub('sigma')">⚡ SigmaHQ Canlı Davranış</button>
+                <button class="btn-secondary" id="btn-sub-stealers" onclick="switchFoundationSub('stealers')">🛡️ Shadowserver Stealer Koruması</button>
+            </div>
+
+            <!-- SUBPANEL 1: CIS BENCHMARK -->
+            <div id="subpanel-cis" class="foundation-subpanel">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                        <div>
+                            <h2 style="color: #fff; font-size: 18px;" data-i18n="cis_card_title">CIS Controls v8.1 ve Windows Benchmark Uyumluluğu</h2>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" data-i18n="cis_card_desc">Center for Internet Security resmi rehberine göre 8 kritik güvenlik noktasının otomasyonlu denetimi.</p>
+                        </div>
+                        <button class="btn" onclick="runCisAudit()">
+                            <span>&#8635;</span> <span data-i18n="btn_run_cis">CIS Denetimini Çalıştır</span>
+                        </button>
+                    </div>
+
+                    <!-- CIS Score Hero -->
+                    <div style="margin-top: 18px; display: flex; align-items: center; gap: 20px; padding: 16px; background: rgba(0,0,0,0.25); border-radius: 10px; flex-wrap: wrap;">
+                        <div style="text-align: center; min-width: 100px;">
+                            <div id="cis-score-val" style="font-size: 32px; font-weight: 700; color: var(--emerald);">%0</div>
+                            <div style="font-size: 11px; color: var(--text-muted);" data-i18n="cis_compliance_label">Uyum Skoru</div>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+                                <span id="cis-passed-text" style="color: var(--emerald);">0 Kontrol Başarılı</span>
+                                <span id="cis-failed-text" style="color: var(--rose);">0 Kontrol İyileştirme Gerekli</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                <div id="cis-score-bar" style="height: 100%; width: 0%; background: var(--emerald); transition: width 0.5s ease;"></div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; min-width: 70px;">
+                            <div id="cis-grade-val" class="pill pill-clean" style="font-size: 16px; padding: 4px 12px;">-</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Güvenlik Derecesi</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CIS Checks Table -->
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;" data-i18n="cis_table_title">CIS Benchmark 8 Noktalı Güvenlik Kontrolleri</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Kontrol ID</th>
+                                    <th>Başlık & Kategori</th>
+                                    <th>CIS Standart</th>
+                                    <th>Mevcut Değer</th>
+                                    <th>Tavsiye Edilen</th>
+                                    <th>Durum</th>
+                                    <th>Düzeltme Adımları (Remediation)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cis-table-body">
+                                <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:25px;">Denetim henüz başlatılmadı. 'CIS Denetimini Çalıştır' butonuna basın.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 2: FIRST.ORG EPSS -->
+            <div id="subpanel-epss" class="foundation-subpanel" style="display: none;">
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 style="color: #fff; font-size: 18px; margin-bottom: 6px;" data-i18n="epss_card_title">FIRST.org EPSS v3 Sömürü Tahmin Motoru</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;" data-i18n="epss_card_desc">Herhangi bir CVE zafiyetinin önümüzdeki 30 gün içinde vahşi doğada (in the wild) sömürülme olasılığını FIRST.org API'sinden sorgulayın.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="epss-cve-input" class="search-input" placeholder="CVE Numarası girin (Örn: CVE-2024-21413 veya 2023-38831)" style="flex: 1;" />
+                        <button class="btn" onclick="lookupEpss()">
+                            <span>🎯</span> <span data-i18n="btn_epss_lookup">EPSS Skoru Sorgula</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- EPSS Result Box -->
+                <div class="card" id="epss-result-card" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                        <h3 id="epss-cve-title" style="color: #fff; font-size: 17px;">CVE-XXXX-XXXX</h3>
+                        <span id="epss-risk-pill" class="pill pill-high">Yüksek Risk</span>
+                    </div>
+                    <div class="stats-grid" style="margin-bottom: 18px;">
+                        <div class="stat-card">
+                            <div class="stat-label">EPSS Sömürü İhtimali</div>
+                            <div class="stat-value" id="epss-score-val" style="color: var(--rose);">%0.00</div>
+                            <div class="stat-desc">Önümüzdeki 30 gün içinde saldırı olasılığı</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Yüzdelik Dilim (Percentile)</div>
+                            <div class="stat-value" id="epss-percentile-val" style="color: var(--amber);">%0.0</div>
+                            <div class="stat-desc">Tüm CVE'lerden daha tehlikeli olma oranı</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Veri Kaynağı</div>
+                            <div class="stat-value" id="epss-source-val" style="font-size: 14px; color: var(--cyan);">FIRST.org</div>
+                            <div class="stat-desc" id="epss-date-val">Güncel Veri</div>
+                        </div>
+                    </div>
+                    <div style="padding: 14px; background: rgba(0,0,0,0.25); border-radius: 8px; margin-bottom: 12px;">
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Zafiyet Açıklaması</div>
+                        <div id="epss-desc-val" style="font-size: 13px; color: #fff;">-</div>
+                    </div>
+                    <div style="padding: 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px;">
+                        <div style="font-size: 11px; color: var(--emerald); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">FIRST.org Resmi Güvenlik Tavsiyesi</div>
+                        <div id="epss-rec-val" style="font-size: 13px; color: #fff;">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 3: ABUSE.CH URLHAUS -->
+            <div id="subpanel-urlhaus" class="foundation-subpanel" style="display: none;">
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 style="color: #fff; font-size: 18px; margin-bottom: 6px;" data-i18n="urlhaus_card_title">Abuse.ch URLhaus Canlı Zararlı URL Denetimi</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;" data-i18n="urlhaus_card_desc">Şüpheli bir bağlantının kötü amaçlı yazılım, infostealer veya fidye yükleyici barındırıp barındırmadığını sorgulayın.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="urlhaus-input" class="search-input" placeholder="Sorgulanacak URL girin (Örn: http://malicious-loader.biz/payload.exe)" style="flex: 1;" />
+                        <button class="btn" onclick="lookupUrlhaus()">
+                            <span>🌐</span> <span data-i18n="btn_urlhaus_lookup">URL Sorgula</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" id="urlhaus-result-card" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 id="urlhaus-result-title" style="color: #fff; font-size: 16px;">Sorgu Sonucu</h3>
+                        <span id="urlhaus-status-pill" class="pill pill-clean">Temiz</span>
+                    </div>
+                    <div id="urlhaus-result-content" style="font-size: 13px; color: var(--text-muted); line-height: 1.6;"></div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 4: EFF STALKERWARE HUNTER -->
+            <div id="subpanel-stalkerware" class="foundation-subpanel" style="display: none;">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                        <div>
+                            <h2 style="color: #fff; font-size: 18px;" data-i18n="stalkerware_card_title">EFF Coalition Against Stalkerware & Anti-Spyware Hunter</h2>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" data-i18n="stalkerware_card_desc">FlexiSPY, mSpy, gizli ekran kaydı, tuş dinleyicileri ve taklitçi sistem süreçlerini tespit edin.</p>
+                        </div>
+                        <button class="btn" onclick="scanStalkerware()">
+                            <span>🕵️</span> <span data-i18n="btn_scan_stalkerware">Casus Yazılımları Tara</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;" data-i18n="stalkerware_table_title">Tespit Edilen Casus & İzleme Süreçleri</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Süreç Adı</th>
+                                    <th>Uygulama / Tehdit</th>
+                                    <th>Kategori</th>
+                                    <th>MITRE ATT&CK</th>
+                                    <th>Seviye</th>
+                                    <th>Açıklama</th>
+                                    <th>Eylem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stalkerware-table-body">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:25px;">Tarama başlatılmadı. 'Casus Yazılımları Tara' butonuna basın.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 5: SIGMAHQ BEHAVIOR -->
+            <div id="subpanel-sigma" class="foundation-subpanel" style="display: none;">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                        <div>
+                            <h2 style="color: #fff; font-size: 18px;" data-i18n="sigma_card_title">SigmaHQ Açık Kaynak Davranış Eşleştirme Motoru</h2>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" data-i18n="sigma_card_desc">Çalışan tüm Windows süreçlerinin komut satırlarını SigmaHQ kuralları havuzuyla gerçek zamanlı eşleştirin.</p>
+                        </div>
+                        <button class="btn" onclick="scanSigma()">
+                            <span>⚡</span> <span data-i18n="btn_scan_sigma">SigmaHQ Taraması Başlat</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;" data-i18n="sigma_table_title">SigmaHQ Kural Eşleşmeleri</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Kural Başlığı</th>
+                                    <th>Seviye</th>
+                                    <th>PID</th>
+                                    <th>Süreç</th>
+                                    <th>Ebeveyn</th>
+                                    <th>MITRE ATT&CK</th>
+                                    <th>Komut Satırı</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sigma-table-body">
+                                <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:25px;">Tarama başlatılmadı. 'SigmaHQ Taraması Başlat' butonuna basın.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 6: SHADOWSERVER STEALERS -->
+            <div id="subpanel-stealers" class="foundation-subpanel" style="display: none;">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                        <div>
+                            <h2 style="color: #fff; font-size: 18px;" data-i18n="stealers_card_title">Shadowserver Stealer Kasa ve Token Koruyucu</h2>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" data-i18n="stealers_card_desc">Tarayıcı şifre depoları (Login Data), oturum çerezleri (Cookies) ve MetaMask cüzdan dosyalarını hedef alan süreçleri denetleyin.</p>
+                        </div>
+                        <button class="btn" onclick="scanStealers()">
+                            <span>🛡️</span> <span data-i18n="btn_scan_stealers">Kasa Erişim Taraması Yap</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px; margin-bottom: 12px;" data-i18n="stealers_table_title">Şüpheli Kasa ve Kimlik Bilgisi Hedeflemeleri</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Süreç Adı</th>
+                                    <th>Hedeflenen Kasa / Varlık</th>
+                                    <th>Kategori</th>
+                                    <th>MITRE ATT&CK</th>
+                                    <th>Açıklama</th>
+                                    <th>Öneri</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stealers-table-body">
+                                <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:25px;">Tarama başlatılmadı. 'Kasa Erişim Taraması Yap' butonuna basın.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: SETTINGS & CONFIGURATION -->
+        <div id="tab-settings" class="tab-content">
+            <div class="page-header" style="flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 class="page-title" data-i18n="settings_title">⚙️ Sistem Ayarları & EDR Yapılandırması</h1>
+                    <p class="page-desc" data-i18n="settings_desc">Gerçek zamanlı koruma (RTP), dışlamalar, donanım gizliliği, debloat modları, istihbarat akışları ve EDR yanıt politikalarını yönetin.</p>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn" onclick="saveSettings()" style="background: linear-gradient(135deg, #06b6d4, #0284c7);">
+                        <span>💾</span> <span data-i18n="btn_save_settings">Değişiklikleri Kaydet</span>
+                    </button>
+                    <button class="btn-secondary" onclick="loadSettings()">
+                        <span>🔄</span> <span data-i18n="btn_reload_settings">Yenile</span>
+                    </button>
+                    <button class="btn-secondary" onclick="exportSettings()">
+                        <span>📥</span> <span data-i18n="btn_export_settings">Dışa Aktar</span>
+                    </button>
+                    <button class="btn-secondary" onclick="document.getElementById('settings-import-input').click()">
+                        <span>📤</span> <span data-i18n="btn_import_settings">İçe Aktar</span>
+                    </button>
+                    <input type="file" id="settings-import-input" style="display:none;" accept=".json" onchange="handleSettingsImport(event)">
+                    <button class="btn-secondary" onclick="resetSettings()" style="color: #f43f5e; border-color: rgba(244, 63, 94, 0.4);">
+                        <span>⚠️</span> <span data-i18n="btn_reset_settings">Fabrika Ayarlarına Sıfırla</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Sub-Navigation -->
+            <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
+                <button class="btn" id="btn-settings-rtp" onclick="switchSettingsSub('rtp')">🛡️ Gerçek Zamanlı Koruma</button>
+                <button class="btn-secondary" id="btn-settings-exclusions" onclick="switchSettingsSub('exclusions')">🚫 Dışlamalar & Beyaz Liste</button>
+                <button class="btn-secondary" id="btn-settings-privacy" onclick="switchSettingsSub('privacy')">👁️ Donanım & Gizlilik</button>
+                <button class="btn-secondary" id="btn-settings-modes" onclick="switchSettingsSub('modes')">⚡ Oyun & İş Modu</button>
+                <button class="btn-secondary" id="btn-settings-feeds" onclick="switchSettingsSub('feeds')">🌐 İstihbarat Akışları</button>
+                <button class="btn-secondary" id="btn-settings-edr" onclick="switchSettingsSub('edr')">🎯 EDR Yanıt Politikaları</button>
+                <button class="btn-secondary" id="btn-settings-general" onclick="switchSettingsSub('general')">⚙️ Genel Sistem & SIEM</button>
+            </div>
+
+            <!-- SUBPANEL 1: RTP -->
+            <div id="subpanel-settings-rtp" class="settings-subpanel">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🛡️ Gerçek Zamanlı Dosya Koruması (RTP)</div>
+                            <div class="setting-desc">Dosya sistemi kancasıyla yeni oluşturulan veya değiştirilen tüm dosyaları anında tarar.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-rtp-enabled">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">⚡ Tehdit Tespit Aksiyonu</div>
+                            <div class="setting-desc">Zararlı yazılım yakalandığında uygulanacak otomatik savunma politikası.</div>
+                        </div>
+                        <select id="cfg-rtp-action" class="input-field" style="width: 170px; padding: 6px 10px; font-size: 12px;">
+                            <option value="auto_quarantine">Otomatik Karantina</option>
+                            <option value="block_and_alert">Engelle & Uyar</option>
+                            <option value="log_only">Yalnızca Günlüğe Kaydet</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">📦 Arşiv Taraması (.zip / .rar / .7z)</div>
+                            <div class="setting-desc">Sıkıştırılmış arşiv paketlerinin içindeki dosyaları taramaya dahil et.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-rtp-scan-archives">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🧬 Sezgisel (Heuristic) Analiz</div>
+                            <div class="setting-desc">Bilinmeyen ve sıfır-gün tehditler için PE davranış ve anomali motorunu çalıştır.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-rtp-scan-heuristics">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">⚡ YARA Kuralları Entegrasyonu</div>
+                            <div class="setting-desc">RTP dosya yazma anında YARA-X kurallar havuzunu değerlendir.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-rtp-scan-yara">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">💣 Arşiv Derinlik Sınırı (Zip-Bomb Koruyucu)</div>
+                            <div class="setting-desc">İç içe gömülü arşivler için azami döngü derinliği (1-10).</div>
+                        </div>
+                        <input type="number" id="cfg-rtp-archive-depth" min="1" max="10" class="input-field" style="width: 80px; text-align: center;">
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <h3 style="color: #fff; font-size: 15px;">📊 Azami Dosya Boyutu Limiti (Max File Size)</h3>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Disk I/O tıkanmasını önlemek için anlık taranacak dosya boyutu tavanı.</p>
+                        </div>
+                        <span id="val-rtp-max-size" class="pill pill-purple" style="font-size: 13px; padding: 4px 12px;">250 MB</span>
+                    </div>
+                    <input type="range" id="cfg-rtp-max-size" min="10" max="2000" step="10" style="width: 100%; accent-color: var(--cyan);" oninput="document.getElementById('val-rtp-max-size').innerText = this.value + ' MB'">
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px;">📁 Gerçek Zamanlı İzlenen Dizinler (Monitored Paths)</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Dosya sistemi bekçisinin canlı olarak nöbet tuttuğu klasörler.</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <input type="text" id="input-new-monitored-path" class="input-field" placeholder="Örn: D:\Downloads veya C:\SharedFolder" style="flex: 1;">
+                        <button class="btn" onclick="addTagItem('monitored_paths', 'input-new-monitored-path')">+ Ekle</button>
+                    </div>
+                    <div id="tags-monitored_paths" class="tag-container"></div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 2: EXCLUSIONS -->
+            <div id="subpanel-settings-exclusions" class="settings-subpanel" style="display:none;">
+                <div class="card" style="margin-bottom: 18px;">
+                    <h3 style="color: #fff; font-size: 15px;">🚫 Taramadan Muaf Tutulan Dizinler (Excluded Paths)</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Geliştirici depoları, sanal makine diskleri veya derleme klasörleri (target, node_modules).</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <input type="text" id="input-new-excluded-path" class="input-field" placeholder="Örn: C:\GitRepositories veya D:\VMs" style="flex: 1;">
+                        <button class="btn" onclick="addTagItem('excluded_paths', 'input-new-excluded-path')">+ Ekle</button>
+                    </div>
+                    <div id="tags-excluded_paths" class="tag-container"></div>
+                </div>
+
+                <div class="card" style="margin-bottom: 18px;">
+                    <h3 style="color: #fff; font-size: 15px;">📄 Muaf Tutulan Dosya Uzantıları (Excluded Extensions)</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Taramada atlanacak güvenli veya devasa dosya uzantıları (nokta ile başlayın: .iso, .vmdk).</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <input type="text" id="input-new-excluded-ext" class="input-field" placeholder="Örn: .iso, .vmdk, .vhdx" style="flex: 1;">
+                        <button class="btn" onclick="addTagItem('excluded_extensions', 'input-new-excluded-ext')">+ Ekle</button>
+                    </div>
+                    <div id="tags-excluded_extensions" class="tag-container"></div>
+                </div>
+
+                <div class="card" style="margin-bottom: 18px;">
+                    <h3 style="color: #fff; font-size: 15px;">⚙️ Güvenilir Süreç Adları (Trusted Processes)</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Süreç ve bellek taramalarında alarm üretilmeyecek güvenilir ikili adları.</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <input type="text" id="input-new-excluded-proc" class="input-field" placeholder="Örn: code.exe, devenv.exe, cargo.exe" style="flex: 1;">
+                        <button class="btn" onclick="addTagItem('excluded_processes', 'input-new-excluded-proc')">+ Ekle</button>
+                    </div>
+                    <div id="tags-excluded_processes" class="tag-container"></div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px;">🔒 Güvenilir SHA-256 İmzaları (Trusted Hashes Whitelist)</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Özel şirket içi yazılımlar veya onaylanmış ikili dosyaların 64 karakterlik SHA-256 özeti.</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <input type="text" id="input-new-trusted-hash" class="input-field" placeholder="64 karakter SHA-256 karma değeri" style="flex: 1; font-family: monospace;">
+                        <button class="btn" onclick="addTagItem('trusted_hashes_sha256', 'input-new-trusted-hash')">+ Ekle</button>
+                    </div>
+                    <div id="tags-trusted_hashes_sha256" class="tag-container"></div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 3: PRIVACY -->
+            <div id="subpanel-settings-privacy" class="settings-subpanel" style="display:none;">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">👁️ Donanım Gizlilik Koruması</div>
+                            <div class="setting-desc">Windows ConsentStore üzerinden kamera ve mikrofon donanımlarını nöbette tutar.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-privacy-enabled">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">📹 Kamera Açılışında Alarm</div>
+                            <div class="setting-desc">Webcam donanımı herhangi bir uygulama tarafından tetiklendiğinde uyar.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-privacy-alert-camera">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🎙️ Mikrofon Açılışında Alarm</div>
+                            <div class="setting-desc">Mikrofon donanımı ses kaydına başladığında anında uyar.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-privacy-alert-mic">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🔔 Windows Toast Bildirimi Fırlat</div>
+                            <div class="setting-desc">Donanım açıldığında Windows İşlem Merkezine (Action Center) yerel bildirim gönder.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-privacy-notify-toast">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🚨 Şüpheli/Bilinmeyen Süreçte Sert Uyarı</div>
+                            <div class="setting-desc">Beyaz listede olmayan bir script veya geçici dosya kameraya erişirse kırmızı alarm ver.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-privacy-strict">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <h3 style="color: #fff; font-size: 15px;">⏱️ Kayıt Defteri Denetim Sıklığı (Poll Interval)</h3>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Kamera/mikrofon durumunun Windows kayıt defterinden sorgulanma aralığı.</p>
+                        </div>
+                        <span id="val-privacy-poll" class="pill pill-purple" style="font-size: 13px; padding: 4px 12px;">2 sn</span>
+                    </div>
+                    <input type="range" id="cfg-privacy-poll" min="1" max="15" step="1" style="width: 100%; accent-color: var(--cyan);" oninput="document.getElementById('val-privacy-poll').innerText = this.value + ' sn'">
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px;">🤝 Güvenilir İletişim & Konferans Uygulamaları (Whitelisted Apps)</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Kamera ve mikrofon erişimleri normal karşılanacak onaylı toplantı ve kayıt araçları.</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <input type="text" id="input-new-whitelist-app" class="input-field" placeholder="Örn: zoom.exe, teams.exe, discord.exe" style="flex: 1;">
+                        <button class="btn" onclick="addTagItem('whitelisted_apps', 'input-new-whitelist-app')">+ Ekle</button>
+                    </div>
+                    <div id="tags-whitelisted_apps" class="tag-container"></div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 4: MODES -->
+            <div id="subpanel-settings-modes" class="settings-subpanel" style="display:none;">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🎮 Otomatik Oyun Modu (Auto Game Detection)</div>
+                            <div class="setting-desc">Tam ekran oyun (CS2, Valorant, Steam) algılandığında düşük gecikme moduna otomatik geç.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-mode-auto-game">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🧹 İş Modunda WinDebloat & Gizlilik</div>
+                            <div class="setting-desc">İş Moduna geçildiğinde Windows telemetri servislerini durdur, Bing aramalarını ve reklam ID'sini kapat.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-mode-debloat-work">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🔋 Pildeyken Taramaları Beklet</div>
+                            <div class="setting-desc">Dizüstü bilgisayar prize takılı değilken yoğun arka plan taramalarını ertele.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-mode-pause-battery">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <h3 style="color: #fff; font-size: 15px;">⚙️ Arka Plan Tarayıcı CPU Kullanım Tavanı</h3>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Kullanıcı bilgisayarda çalışırken tarama motorlarının tüketebileceği azami işlemci payı.</p>
+                        </div>
+                        <span id="val-mode-cpu-limit" class="pill pill-purple" style="font-size: 13px; padding: 4px 12px;">%40</span>
+                    </div>
+                    <input type="range" id="cfg-mode-cpu-limit" min="10" max="100" step="5" style="width: 100%; accent-color: var(--cyan);" oninput="document.getElementById('val-mode-cpu-limit').innerText = '%' + this.value">
+                </div>
+            </div>
+
+            <!-- SUBPANEL 5: FEEDS -->
+            <div id="subpanel-settings-feeds" class="settings-subpanel" style="display:none;">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🔄 Otomatik İmza Güncellemesi</div>
+                            <div class="setting-desc">Tehdit istihbaratı akışlarını ve YARA kurallarını periyodik olarak arka planda yenile.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-feeds-auto-update">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">⏳ Güncelleme Sıklığı</div>
+                            <div class="setting-desc">İstihbarat sunucularına yapılacak yoklama periyodu.</div>
+                        </div>
+                        <select id="cfg-feeds-update-interval" class="input-field" style="width: 140px; padding: 6px 10px; font-size: 12px;">
+                            <option value="1">Her 1 Saatte</option>
+                            <option value="3">Her 3 Saatte</option>
+                            <option value="6">Her 6 Saatte</option>
+                            <option value="12">Her 12 Saatte</option>
+                            <option value="24">Günde 1 Kez</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-card" style="border-color: rgba(245, 158, 11, 0.35);">
+                        <div class="setting-info">
+                            <div class="setting-title" style="color: var(--amber);">✈️ Kurumsal Hava Boşluğu (Air-Gapped Modu)</div>
+                            <div class="setting-desc">Dışarıya giden tüm HTTP istihbarat isteklerini tamamen keser (Kapalı devre ağlar için).</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-feeds-offline">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px; margin-bottom: 14px;">📡 Aktif İstihbarat Akışları (Threat Feeds Selection)</h3>
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-title">🇹🇷 USOM (Siber Güvenlik Başkanlığı)</div>
+                                <div class="setting-desc">Türkiye zararlı bağlantı ve C2 istihbarat beslemesi.</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="cfg-feeds-usom">
+                                <span class="slider-round"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-title">🛡️ Abuse.ch MalwareBazaar</div>
+                                <div class="setting-desc">Küresel aktif kötü amaçlı yazılım SHA-256 karma veritabanı.</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="cfg-feeds-malwarebazaar">
+                                <span class="slider-round"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-title">🦊 Abuse.ch ThreatFox</div>
+                                <div class="setting-desc">Zararlı yazılım göstergeleri, botnet portları ve alan adları.</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="cfg-feeds-threatfox">
+                                <span class="slider-round"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-title">🌐 Abuse.ch URLhaus</div>
+                                <div class="setting-desc">Aktif zararlı yük indirme beşikleri ve sahte bağlantılar.</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="cfg-feeds-urlhaus">
+                                <span class="slider-round"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-title">🛑 The Spamhaus Project (DROP)</div>
+                                <div class="setting-desc">Kurşun geçirmez botnet ve siber suç ağları IP blokları.</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="cfg-feeds-spamhaus">
+                                <span class="slider-round"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-title">🛰️ SANS ISC DShield</div>
+                                <div class="setting-desc">Küresel bal küpü (honeypot) en çok saldıran IP istihbaratı.</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="cfg-feeds-sans">
+                                <span class="slider-round"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-title">⚡ YARA-Forge Açık Kaynak Kuralları</div>
+                                <div class="setting-desc">Cobalt Strike, fidye yazılımı ve APT YARA kural koleksiyonu.</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="cfg-feeds-yara">
+                                <span class="slider-round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 6: EDR -->
+            <div id="subpanel-settings-edr" class="settings-subpanel" style="display:none;">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🪤 Fidye Yem Tuzağı (Canary) Müdahale Aksiyonu</div>
+                            <div class="setting-desc">Yem dosyası üzerinde şifreleme girişimi algılandığında uygulanacak eylem.</div>
+                        </div>
+                        <select id="cfg-edr-canary-action" class="input-field" style="width: 170px; padding: 6px 10px; font-size: 12px;">
+                            <option value="kill_process">Süreci Anında Sonlandır (Kill)</option>
+                            <option value="alert_only">Yalnızca Alarm Üret</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">💉 Bellek Enjeksiyonu (Unbacked RWX) Aksiyonu</div>
+                            <div class="setting-desc">Süreç belleğinde dosyasız shellcode enjeksiyonu yakalandığında uygulanacak politika.</div>
+                        </div>
+                        <select id="cfg-edr-memory-action" class="input-field" style="width: 170px; padding: 6px 10px; font-size: 12px;">
+                            <option value="suspend_thread">İş Parçacığını Askıya Al (Suspend)</option>
+                            <option value="kill_process">Tüm Süreci Sonlandır (Kill)</option>
+                            <option value="log_only">Yalnızca Günlüğe Kaydet</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">⚔️ LOLBAS Kötüye Kullanımında Otomatik Kill</div>
+                            <div class="setting-desc">Meşru sistem araçları (certutil, mshta vb.) saldırı amaçlı kullanıldığında anında sonlandır.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-edr-lolbas-kill">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🛡️ Savunmasız Sürücü (BYOVD) Alarmı</div>
+                            <div class="setting-desc">LOLDrivers listesindeki zafiyetli çekirdek sürücüsü yüklendiğinde alarm fırlat.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-edr-byovd-alert">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🛑 Bilinen C2 Botnet IP Trafiğini Engelle</div>
+                            <div class="setting-desc">USOM ve ThreatFox botnet IP'lerine giden bağlantıları Windows Güvenlik Duvarında blokla.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-edr-c2-block">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 7: GENERAL & SIEM -->
+            <div id="subpanel-settings-general" class="settings-subpanel" style="display:none;">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🌍 Sistem ve Arayüz Dili (Language)</div>
+                            <div class="setting-desc">Kontrol paneli ve bildirimlerin görüntüleneceği dil.</div>
+                        </div>
+                        <select id="cfg-general-lang" class="input-field" style="width: 140px; padding: 6px 10px; font-size: 12px;">
+                            <option value="tr">Türkçe</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🚀 Windows ile Birlikte Başlat</div>
+                            <div class="setting-desc">Bilgisayar açıldığında Project Guard'ı otomatik olarak arka planda çalıştır.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-general-start-windows">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🗔 Sistem Tepsisine Küçült (Tray)</div>
+                            <div class="setting-desc">Pencere kapatıldığında korumayı kapatmak yerine görev çubuğu tepsisine gönder.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-general-tray">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">🏛️ 7/24 Arka Plan Windows Hizmeti (Service)</div>
+                            <div class="setting-desc">Oturum açık olmasa dahi Windows Hizmeti olarak arka planda EDR koruması sürdür.</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="cfg-general-service">
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <div class="setting-title">📝 Günlük Seviyesi (Log Level)</div>
+                            <div class="setting-desc">Olay günlüğü ayrıntı derinliği.</div>
+                        </div>
+                        <select id="cfg-general-log-level" class="input-field" style="width: 140px; padding: 6px 10px; font-size: 12px;">
+                            <option value="info">Info (Bilgi - Normal)</option>
+                            <option value="debug">Debug (Hata Ayıklama)</option>
+                            <option value="warn">Warn (Yalnızca Uyarılar)</option>
+                            <option value="error">Error (Yalnızca Hatalar)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #fff; font-size: 15px;">📡 Harici SIEM / Webhook Bildirim Entegrasyonu</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Kritik tehdit ve ihlal olaylarında SOC merkezine veya Slack/Discord kanalına anlık JSON fırlatın.</p>
+                    <div style="margin-top: 12px;">
+                        <input type="text" id="cfg-general-webhook" class="input-field" placeholder="https://siem.corp.local/api/alerts veya Discord/Slack Webhook URL" style="width: 100%;">
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <div id="toast"></div>
 
@@ -1724,7 +2923,69 @@
                 svc_status_updated: "Windows Hizmet durumu güncellendi: ",
                 svc_started_ok: "Project Guard Hizmeti başarıyla başlatıldı!",
                 svc_stopped_ok: "Project Guard Hizmeti durduruldu.",
-                btn_exit: "Kapat"
+                btn_exit: "Kapat",
+                nav_privacy: "Kamera & Donanım Gizliliği",
+                nav_mode: "Oyun & İş Modu (Debloat)",
+                nav_foundation: "Vakıf İstihbaratı & CIS",
+                nav_settings: "Sistem & Koruma Ayarları",
+                settings_title: "⚙️ Sistem Ayarları & EDR Yapılandırması",
+                settings_desc: "Gerçek zamanlı koruma (RTP), dışlamalar, donanım gizliliği, debloat modları, istihbarat akışları ve EDR yanıt politikalarını yönetin.",
+                btn_save_settings: "Değişiklikleri Kaydet",
+                btn_reload_settings: "Yenile",
+                btn_export_settings: "Dışa Aktar",
+                btn_import_settings: "İçe Aktar",
+                btn_reset_settings: "Fabrika Ayarlarına Sıfırla",
+                privacy_title: "Kamera & Donanım Gizlilik Monitörü",
+                privacy_desc: "Windows ConsentStore donanım telemetrisi ile gizli kamera ve mikrofon erişimlerini denetleyin.",
+                btn_privacy_refresh: "Durumu Yenile",
+                btn_privacy_test_toast: "Test Bildirimi Gönder",
+                stat_webcam_status: "Kamera (Webcam) Durumu",
+                stat_mic_status: "Mikrofon Durumu",
+                stat_suspicious_privacy: "Şüpheli Donanım Erişimi",
+                stat_suspicious_privacy_desc: "Temp / Kabuk veya Casus Taktikleri",
+                stat_total_devices: "Kayıtlı İzin Sayısı",
+                stat_total_devices_desc: "Webcam & Mikrofon Kaydı",
+                privacy_table_title: "Donanım İzin ve Canlı Erişim Günlüğü",
+                mode_title: "Sistem Modu & WinDebloat",
+                mode_desc: "Oyunlar için düşük gecikme, iş için telemetri ve Bing temizliği, tek tıkla geri alma.",
+                btn_mode_refresh: "Durumu Yenile",
+                active_mode_label: "MEVCUT AKTİF SİSTEM PROFİLİ",
+                mode_game_title: "Oyun Modu (Ultra Düşük Gecikme)",
+                mode_game_desc: "Maksimum FPS ve minimum girdi gecikmesi. Arka plan servislerinin CPU önceliğini keser, ağ paket kısıtlamasını kaldırır.",
+                btn_apply_game_mode: "Oyun Modunu Aç",
+                mode_work_title: "İş & Gizlilik Modu (WinDebloat)",
+                mode_work_desc: "Gereksiz telemetri ve tüketici şişkinliklerini kaldırır. Başlat menüsü web aramalarını ve reklam takibini sonlandırır.",
+                btn_apply_work_mode: "İş & Gizlilik Modunu Aç",
+                mode_restore_title: "Varsayılan Mod (Geri Al)",
+                mode_restore_desc: "Yapılan tüm değişiklikleri güvenle geri alır. Kayıt defterini ve Windows servislerini orijinal fabrika ayarlarına döndürür.",
+                btn_restore_defaults: "Varsayılana Sıfırla (Rollback)",
+                mode_metrics_title: "Windows Kayıt Defteri Ayarları ve Canlı Değerler",
+                mode_changes_title: "Son Uygulanan İşlemler ve Kayıt Defteri Güncellemeleri",
+                foundation_title: "Vakıf İstihbaratı & Gelişmiş Denetimler",
+                foundation_desc: "CIS Controls v8.1, FIRST.org EPSS v3, Abuse.ch URLhaus, EFF Stalkerware Hunter ve SigmaHQ davranış taraması.",
+                cis_card_title: "CIS Controls v8.1 ve Windows Benchmark Uyumluluğu",
+                cis_card_desc: "Center for Internet Security resmi rehberine göre 8 kritik güvenlik noktasının otomasyonlu denetimi.",
+                btn_run_cis: "CIS Denetimini Çalıştır",
+                cis_compliance_label: "Uyum Skoru",
+                cis_table_title: "CIS Benchmark 8 Noktalı Güvenlik Kontrolleri",
+                epss_card_title: "FIRST.org EPSS v3 Sömürü Tahmin Motoru",
+                epss_card_desc: "Herhangi bir CVE zafiyetinin önümüzdeki 30 gün içinde vahşi doğada sömürülme olasılığını FIRST.org API'sinden sorgulayın.",
+                btn_epss_lookup: "EPSS Skoru Sorgula",
+                urlhaus_card_title: "Abuse.ch URLhaus Canlı Zararlı URL Denetimi",
+                urlhaus_card_desc: "Şüpheli bir bağlantının kötü amaçlı yazılım veya fidye yükleyici barındırıp barındırmadığını sorgulayın.",
+                btn_urlhaus_lookup: "URL Sorgula",
+                stalkerware_card_title: "EFF Coalition Against Stalkerware & Anti-Spyware Hunter",
+                stalkerware_card_desc: "FlexiSPY, mSpy, gizli ekran kaydı, tuş dinleyicileri ve taklitçi sistem süreçlerini tespit edin.",
+                btn_scan_stalkerware: "Casus Yazılımları Tara",
+                stalkerware_table_title: "Tespit Edilen Casus & İzleme Süreçleri",
+                sigma_card_title: "SigmaHQ Açık Kaynak Davranış Eşleştirme Motoru",
+                sigma_card_desc: "Çalışan tüm Windows süreçlerinin komut satırlarını SigmaHQ kuralları havuzuyla gerçek zamanlı eşleştirin.",
+                btn_scan_sigma: "SigmaHQ Taraması Başlat",
+                sigma_table_title: "SigmaHQ Kural Eşleşmeleri",
+                stealers_card_title: "Shadowserver Stealer Kasa ve Token Koruyucu",
+                stealers_card_desc: "Tarayıcı şifre depoları, oturum çerezleri ve MetaMask cüzdan dosyalarını hedef alan süreçleri denetleyin.",
+                btn_scan_stealers: "Kasa Erişim Taraması Yap",
+                stealers_table_title: "Şüpheli Kasa ve Kimlik Bilgisi Hedeflemeleri"
             },
             en: {
                 brand_subtitle: "Threat Control Console",
@@ -1748,6 +3009,17 @@
                 nav_iocs: "Static IOC Triage",
                 nav_eventlog: "EventLog Hunter",
                 nav_triage: "Deep PE Triage & Entropy",
+                nav_privacy: "Camera & Hardware Privacy",
+                nav_mode: "Game & Work Mode (Debloat)",
+                nav_foundation: "Foundation Intel & CIS",
+                nav_settings: "System & Protection Settings",
+                settings_title: "⚙️ System Settings & EDR Configuration",
+                settings_desc: "Manage real-time protection (RTP), exclusions, hardware privacy, debloat modes, threat feeds and EDR response policies.",
+                btn_save_settings: "Save Changes",
+                btn_reload_settings: "Reload",
+                btn_export_settings: "Export Config",
+                btn_import_settings: "Import Config",
+                btn_reset_settings: "Reset to Factory Defaults",
                 sidebar_defender: "Defender: Dual-Layer OK",
                 overview_title: "System Security Overview",
                 overview_desc: "Live health status of 21 multi-engines, LOLBAS hunters, and open threat intelligence feeds.",
@@ -1811,7 +3083,66 @@
                 svc_install_ok: "Windows Service installed and started successfully! 24/7 protection is now active.",
                 svc_install_fail: "Service installation failed: ",
                 btn_service_install: "Install Service & Start",
-                btn_exit: "Exit App"
+                nav_chrome_ext: "Chrome Web Shield",
+                topbar_tray: "System Tray Active",
+                chrome_card_title: "Project Guard Chrome Web Shield & System Tray",
+                chrome_card_desc: "Browser-level real-time phishing, suspicious C2 IP connection, and SocGholish fake update trap protection. Fully synchronized with local port 7890 EDR daemon.",
+                btn_download_extension: "Download Extension (.zip)",
+                btn_repackage_extension: "Re-Package Extension",
+                btn_install_guide: "Installation Guide",
+                chrome_guide_heading: "Google Chrome Installation Steps (Developer Mode):",
+                btn_exit: "Exit App",
+                privacy_title: "Camera & Hardware Privacy Guard",
+                privacy_desc: "Audit camera and microphone access with Windows ConsentStore telemetry to detect stealth spyware.",
+                btn_privacy_refresh: "Refresh Status",
+                btn_privacy_test_toast: "Send Test Toast Notification",
+                stat_webcam_status: "Webcam Status",
+                stat_mic_status: "Microphone Status",
+                stat_suspicious_privacy: "Suspicious Access",
+                stat_suspicious_privacy_desc: "Temp / Scripts or Spyware Tactics",
+                stat_total_devices: "Registered Permission Count",
+                stat_total_devices_desc: "Webcam & Microphone Records",
+                privacy_table_title: "Hardware Permission & Live Access Log",
+                mode_title: "System Mode & WinDebloat",
+                mode_desc: "Ultra low latency for gaming, telemetry removal for work, one-click rollback.",
+                btn_mode_refresh: "Refresh Status",
+                active_mode_label: "CURRENT ACTIVE SYSTEM PROFILE",
+                mode_game_title: "Game Mode (Ultra Low Latency)",
+                mode_game_desc: "Maximum FPS and lowest input lag. Throttles background tasks and disables network packet delays.",
+                btn_apply_game_mode: "Activate Game Mode",
+                mode_work_title: "Work & Privacy Mode (WinDebloat)",
+                mode_work_desc: "Removes unnecessary telemetry and bloat. Disables Bing web searches and ad ID tracking.",
+                btn_apply_work_mode: "Activate Work & Privacy Mode",
+                mode_restore_title: "Default Mode (Rollback)",
+                mode_restore_desc: "Safely restores all registry tweaks and Windows services to factory defaults.",
+                btn_restore_defaults: "Reset to Defaults (Rollback)",
+                mode_metrics_title: "Windows Registry Settings & Live Values",
+                mode_changes_title: "Recent Applied Actions & Registry Updates",
+                foundation_title: "Foundation Intelligence & Advanced Audits",
+                foundation_desc: "CIS Controls v8.1, FIRST.org EPSS v3, Abuse.ch URLhaus, EFF Stalkerware Hunter, and SigmaHQ behavior rules.",
+                cis_card_title: "CIS Controls v8.1 & Windows Benchmark Hardening",
+                cis_card_desc: "Automated audit of 8 critical security safeguards based on official CIS guidelines.",
+                btn_run_cis: "Run CIS Audit",
+                cis_compliance_label: "Compliance Score",
+                cis_table_title: "CIS Benchmark 8-Point Security Checks",
+                epss_card_title: "FIRST.org EPSS v3 Exploitation Prediction",
+                epss_card_desc: "Query live or offline FIRST.org API for the probability of a CVE being exploited in the wild.",
+                btn_epss_lookup: "Lookup EPSS Score",
+                urlhaus_card_title: "Abuse.ch URLhaus Live Malicious URL Audit",
+                urlhaus_card_desc: "Verify whether a suspicious URL hosts malware, infostealers, or ransomware payloads.",
+                btn_urlhaus_lookup: "Check URL",
+                stalkerware_card_title: "EFF Coalition Against Stalkerware & Anti-Spyware Hunter",
+                stalkerware_card_desc: "Detect commercial stalkerware (FlexiSPY, mSpy), keyloggers, and masqueraded system processes.",
+                btn_scan_stalkerware: "Scan Stalkerware",
+                stalkerware_table_title: "Detected Spyware & Monitoring Processes",
+                sigma_card_title: "SigmaHQ Open Detection Behavior Engine",
+                sigma_card_desc: "Match running process command lines with curated open-source SigmaHQ detection rules.",
+                btn_scan_sigma: "Start SigmaHQ Scan",
+                sigma_table_title: "SigmaHQ Rule Matches",
+                stealers_card_title: "Shadowserver Stealer Vault & Token Guardian",
+                stealers_card_desc: "Detect rogue processes targeting browser login vaults, session cookies, and cryptocurrency wallets.",
+                btn_scan_stealers: "Audit Vault Access",
+                stealers_table_title: "Suspicious Vault & Credential Targets"
             }
         };
 
@@ -1877,7 +3208,11 @@
             'tab-scripts',
             'tab-iocs',
             'tab-eventlog',
-            'tab-triage'
+            'tab-triage',
+            'tab-privacy',
+            'tab-mode',
+            'tab-foundation',
+            'tab-settings'
         ];
 
         function switchTab(tabId) {
@@ -1903,6 +3238,10 @@
             if (tabId === 'tab-drivers') loadDrivers();
             if (tabId === 'tab-fim') checkFimStatus();
             if (tabId === 'tab-eventlog') loadEventLogs();
+            if (tabId === 'tab-privacy') loadPrivacy();
+            if (tabId === 'tab-mode') loadSystemMode();
+            if (tabId === 'tab-foundation') runCisAudit();
+            if (tabId === 'tab-settings') loadSettings();
         }
 
         async function loadStatus() {
@@ -3245,6 +4584,819 @@ IEX $client.DownloadString($url)`;
             }
         }
 
+        // ==========================================
+        // PRIVACY GUARD (CAMERA & MIC) FUNCTIONS
+        // ==========================================
+        async function loadPrivacy() {
+            try {
+                const res = await fetch('/api/privacy');
+                const data = await res.json();
+
+                const webcamActiveEl = document.getElementById('stat-webcam-active');
+                const webcamDescEl = document.getElementById('stat-webcam-desc');
+                const micActiveEl = document.getElementById('stat-mic-active');
+                const micDescEl = document.getElementById('stat-mic-desc');
+                const suspCountEl = document.getElementById('stat-suspicious-count');
+                const totalRecordsEl = document.getElementById('stat-total-privacy-records');
+                const statusPill = document.getElementById('privacy-status-pill');
+
+                if (data.active_webcam_count > 0) {
+                    webcamActiveEl.innerText = `${data.active_webcam_count} AKTİF KULLANIM`;
+                    webcamActiveEl.style.color = 'var(--rose)';
+                    webcamDescEl.innerText = '🚨 Kamera şu anda bir uygulama tarafından kullanılıyor!';
+                } else {
+                    webcamActiveEl.innerText = 'Temiz (Boşta)';
+                    webcamActiveEl.style.color = 'var(--emerald)';
+                    webcamDescEl.innerText = 'Aktif kamera kaydı yok';
+                }
+
+                if (data.active_mic_count > 0) {
+                    micActiveEl.innerText = `${data.active_mic_count} AKTİF KULLANIM`;
+                    micActiveEl.style.color = 'var(--rose)';
+                    micDescEl.innerText = '🎙️ Mikrofon şu anda bir uygulama tarafından dinleniyor!';
+                } else {
+                    micActiveEl.innerText = 'Temiz (Boşta)';
+                    micActiveEl.style.color = 'var(--emerald)';
+                    micDescEl.innerText = 'Aktif mikrofon kaydı yok';
+                }
+
+                suspCountEl.innerText = data.suspicious_count || 0;
+                if (data.suspicious_count > 0) {
+                    suspCountEl.style.color = 'var(--rose)';
+                    statusPill.className = 'pill pill-critical';
+                    statusPill.innerText = `${data.suspicious_count} ŞÜPHELİ ERİŞİM`;
+                } else {
+                    suspCountEl.style.color = 'var(--cyan)';
+                    statusPill.className = 'pill pill-clean';
+                    statusPill.innerText = 'ConsentStore Güvenli';
+                }
+
+                const totalRecords = (data.records && data.records.length) || 0;
+                totalRecordsEl.innerText = totalRecords;
+
+                const tbody = document.getElementById('privacy-table-body');
+                tbody.innerHTML = '';
+
+                if (!data.records || data.records.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--emerald); padding: 25px;">
+                        Kayıt defterinde hiçbir kamera veya mikrofon kullanım kaydı bulunmadı.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.records.forEach(r => {
+                    const tr = document.createElement('tr');
+                    const isCamera = r.device_type === 'Webcam';
+                    const devIcon = isCamera ? '📷' : '🎙️';
+                    const devName = isCamera ? 'Kamera' : 'Mikrofon';
+                    
+                    let statusBadge = r.is_active 
+                        ? `<span class="pill pill-critical" style="animation: pulse 1.5s infinite;">🔴 AKTİF (KULLANILIYOR)</span>`
+                        : `<span class="pill pill-clean">Boşta</span>`;
+
+                    let evalBadge = r.is_suspicious 
+                        ? `<span class="pill pill-critical" title="${r.suspicion_reason || ''}">🚨 Şüpheli / Riskli</span>`
+                        : `<span class="pill pill-clean">Meşru Uygulama</span>`;
+
+                    tr.innerHTML = `
+                        <td><strong>${devIcon} ${devName}</strong></td>
+                        <td><strong style="color: #fff;">${r.process_name}</strong></td>
+                        <td><span style="font-size: 11px; word-break: break-all; color: var(--text-muted);">${r.executable_path}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            ${evalBadge}
+                            ${r.suspicion_reason ? `<div style="font-size: 10.5px; color: var(--rose); margin-top: 3px;">${r.suspicion_reason}</div>` : ''}
+                        </td>
+                        <td><span style="font-size: 11px; color: var(--text-muted);">${r.last_active_human}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                showToast('Donanım gizlilik telemetrisi güncellendi.');
+            } catch (e) {
+                console.error('Gizlilik sorgu hatası:', e);
+            }
+        }
+
+        async function sendTestPrivacyToast() {
+            try {
+                showToast('Windows Action Center Toast bildirimi tetikleniyor...');
+                const res = await fetch('/api/privacy/toast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        app_name: 'GuvenlikTesti.exe',
+                        is_camera: true,
+                        is_suspicious: true
+                    })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast('Windows yerel Toast bildirimi gönderildi!');
+                }
+            } catch (e) {
+                alert('Bildirim hatası: ' + e);
+            }
+        }
+
+        // ==========================================
+        // SYSTEM MODE & WINDEBLOAT FUNCTIONS
+        // ==========================================
+        async function loadSystemMode() {
+            try {
+                const res = await fetch('/api/mode/status');
+                const data = await res.json();
+
+                const modeTitle = document.getElementById('current-mode-title');
+                const modeBadge = document.getElementById('current-mode-badge');
+                const backupStatus = document.getElementById('current-mode-backup-status');
+
+                modeTitle.innerText = data.mode_title || 'Standart Windows Modu';
+                modeBadge.innerText = data.badge || '⚪ [VARSAYILAN]';
+
+                if (data.mode === 'game') {
+                    modeBadge.className = 'pill pill-critical';
+                    modeBadge.style.borderColor = 'var(--cyan)';
+                    modeBadge.style.color = 'var(--cyan)';
+                } else if (data.mode === 'work') {
+                    modeBadge.className = 'pill pill-purple';
+                } else {
+                    modeBadge.className = 'pill pill-clean';
+                }
+
+                if (data.backup_exists) {
+                    backupStatus.innerText = '🛡️ Orijinal Sistem Yedeği (.project_guard/mode_backup.json) Mevcut. Tek tıkla geri alınabilir.';
+                    backupStatus.style.color = 'var(--emerald)';
+                } else {
+                    backupStatus.innerText = 'ℹ️ Henüz bir mod değiştirilmedi. İlk mod değişiminde otomatik yedek oluşturulacaktır.';
+                    backupStatus.style.color = 'var(--text-muted)';
+                }
+
+                const tbody = document.getElementById('mode-metrics-body');
+                tbody.innerHTML = '';
+
+                if (data.metrics && data.metrics.length > 0) {
+                    data.metrics.forEach(m => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong style="color: #fff;">${m[0]}</strong></td>
+                            <td><code style="color: var(--cyan);">${m[1]}</code></td>
+                            <td><span class="pill pill-clean">Aktif Değer</span></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (e) {
+                console.error('Sistem modu yüklenemedi:', e);
+            }
+        }
+
+        async function setSystemMode(mode) {
+            const modeNames = {
+                game: 'Oyun Modu (Ultra Düşük Gecikme)',
+                work: 'İş & Gizlilik Modu (WinDebloat)',
+                restore: 'Varsayılan Windows Modu (Rollback)'
+            };
+            const confirmMsg = currentLang === 'tr'
+                ? `'${modeNames[mode]}' uygulanacak. Devam etmek istiyor musunuz?`
+                : `Applying '${modeNames[mode]}'. Do you want to proceed?`;
+            if (!confirm(confirmMsg)) return;
+
+            showToast(`${modeNames[mode]} uygulanıyor...`);
+
+            try {
+                const res = await fetch('/api/mode/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast(data.message || 'Sistem modu uygulandı!');
+                    const logBox = document.getElementById('mode-changes-box');
+                    const logList = document.getElementById('mode-changes-list');
+                    logBox.style.display = 'block';
+                    logList.innerHTML = '';
+                    (data.changes || []).forEach(c => {
+                        const li = document.createElement('li');
+                        li.innerText = `[OK] ${c}`;
+                        logList.appendChild(li);
+                    });
+                    loadSystemMode();
+                } else {
+                    alert('Hata: ' + (data.error || 'Mod uygulanamadı'));
+                }
+            } catch (e) {
+                alert('İstek başarısız: ' + e);
+            }
+        }
+
+        // ==========================================
+        // FOUNDATION INTEL & CIS AUDIT FUNCTIONS
+        // ==========================================
+        function switchFoundationSub(panelId) {
+            document.querySelectorAll('.foundation-subpanel').forEach(p => p.style.display = 'none');
+            const target = document.getElementById('subpanel-' + panelId);
+            if (target) target.style.display = 'block';
+
+            const buttons = ['cis', 'epss', 'urlhaus', 'stalkerware', 'sigma', 'stealers'];
+            buttons.forEach(b => {
+                const btn = document.getElementById('btn-sub-' + b);
+                if (btn) {
+                    if (b === panelId) {
+                        btn.className = 'btn';
+                    } else {
+                        btn.className = 'btn-secondary';
+                    }
+                }
+            });
+
+            if (panelId === 'cis') runCisAudit();
+            if (panelId === 'stalkerware') scanStalkerware();
+            if (panelId === 'sigma') scanSigma();
+            if (panelId === 'stealers') scanStealers();
+        }
+
+        async function runCisAudit() {
+            const tbody = document.getElementById('cis-table-body');
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--cyan); padding: 25px;">
+                CIS Controls v8.1 ve Windows Benchmark kontrolleri yürütülüyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/cis');
+                const data = await res.json();
+
+                document.getElementById('cis-score-val').innerText = `%${(data.compliance_score || 0).toFixed(1)}`;
+                document.getElementById('cis-score-bar').style.width = `${data.compliance_score || 0}%`;
+                document.getElementById('cis-passed-text').innerText = `${data.passed_checks || 0} Kontrol Başarılı`;
+                document.getElementById('cis-failed-text').innerText = `${data.failed_checks || 0} İyileştirme Gerekli`;
+
+                const gradeEl = document.getElementById('cis-grade-val');
+                gradeEl.innerText = data.grade || 'B';
+                if (data.grade === 'A+' || data.grade === 'A') {
+                    gradeEl.className = 'pill pill-clean';
+                } else if (data.grade === 'B') {
+                    gradeEl.className = 'pill pill-high';
+                } else {
+                    gradeEl.className = 'pill pill-critical';
+                }
+
+                tbody.innerHTML = '';
+                (data.checks || []).forEach(c => {
+                    const tr = document.createElement('tr');
+                    const statusPill = c.passed 
+                        ? `<span class="pill pill-clean">GEÇTİ [OK]</span>` 
+                        : `<span class="pill pill-critical">KALDI (RİSK)</span>`;
+
+                    tr.innerHTML = `
+                        <td><code>${c.id}</code></td>
+                        <td>
+                            <strong style="color: #fff;">${c.title}</strong>
+                            <div style="font-size: 10.5px; color: var(--cyan); margin-top: 2px;">${c.category}</div>
+                        </td>
+                        <td><span style="font-size: 11px; color: var(--text-muted);">${c.cis_control}</span></td>
+                        <td><span style="font-size: 11px; color: ${c.passed ? 'var(--emerald)' : 'var(--rose)'};">${c.current_value}</span></td>
+                        <td><span style="font-size: 11px; color: var(--text-muted);">${c.recommended_value}</span></td>
+                        <td>${statusPill}</td>
+                        <td>
+                            <div style="font-size: 11px; color: var(--text-muted); max-width: 280px;">${c.remediation}</div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                showToast('CIS Benchmark denetimi tamamlandı!');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--rose); padding: 20px;">Hata: ${e}</td></tr>`;
+            }
+        }
+
+        async function lookupEpss() {
+            const cve = document.getElementById('epss-cve-input').value.trim();
+            if (!cve) {
+                alert('Lütfen bir CVE numarası giriniz (Örn: CVE-2024-21413).');
+                return;
+            }
+
+            showToast('FIRST.org EPSS veritabanı sorgulanıyor...');
+
+            try {
+                const res = await fetch('/api/epss/lookup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cve })
+                });
+                const data = await res.json();
+
+                if (data.success && data.report) {
+                    const r = data.report;
+                    const card = document.getElementById('epss-result-card');
+                    card.style.display = 'block';
+
+                    document.getElementById('epss-cve-title').innerText = r.cve_id;
+                    const riskPill = document.getElementById('epss-risk-pill');
+                    riskPill.innerText = r.risk_level;
+                    riskPill.className = r.risk_level.includes('Kritik') ? 'pill pill-critical' : (r.risk_level.includes('Yüksek') ? 'pill pill-high' : 'pill pill-clean');
+
+                    document.getElementById('epss-score-val').innerText = `%${r.epss_percent.toFixed(2)}`;
+                    document.getElementById('epss-percentile-val').innerText = `%${r.percentile.toFixed(1)}`;
+                    document.getElementById('epss-source-val').innerText = r.source;
+                    document.getElementById('epss-date-val').innerText = r.evaluation_date;
+                    document.getElementById('epss-desc-val').innerText = r.description;
+                    document.getElementById('epss-rec-val').innerText = r.recommendation;
+
+                    showToast(`${r.cve_id} EPSS skoru getirildi.`);
+                } else {
+                    alert('EPSS sorgu hatası: ' + (data.error || 'Sonuç alınamadı'));
+                }
+            } catch (e) {
+                alert('İstek başarısız: ' + e);
+            }
+        }
+
+        async function lookupUrlhaus() {
+            const url = document.getElementById('urlhaus-input').value.trim();
+            if (!url) {
+                alert('Lütfen bir URL giriniz.');
+                return;
+            }
+
+            showToast('Abuse.ch URLhaus veritabanı taranıyor...');
+
+            try {
+                const res = await fetch('/api/urlhaus/lookup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+
+                const card = document.getElementById('urlhaus-result-card');
+                const title = document.getElementById('urlhaus-result-title');
+                const pill = document.getElementById('urlhaus-status-pill');
+                const content = document.getElementById('urlhaus-result-content');
+
+                card.style.display = 'block';
+                title.innerText = url;
+
+                if (data.is_threat) {
+                    pill.className = 'pill pill-critical';
+                    pill.innerText = '🚨 ZARARLI URL BULUNDU';
+                    content.innerHTML = `
+                        <div style="color: var(--rose); font-weight: 700; margin-bottom: 6px;">Tehdit Sınıfı: ${data.threat}</div>
+                        <div style="color: var(--text-muted);">Önem Derecesi: <span class="pill pill-critical">${data.severity}</span></div>
+                        <div style="margin-top: 10px; color: #fff;">Bu adres kötü amaçlı payload, infostealer dropper veya komuta kontrol (C2) bağlantısı barındırmaktadır. Kesinlikle ziyaret etmeyiniz.</div>
+                    `;
+                } else {
+                    pill.className = 'pill pill-clean';
+                    pill.innerText = 'Temiz / Tehdit Kaydı Yok';
+                    content.innerHTML = `
+                        <div style="color: var(--emerald);">${data.message || 'Abuse.ch URLhaus ve yerleşik veritabanında bu bağlantıya ait aktif zararlı yazılım kaydı bulunmadı.'}</div>
+                    `;
+                }
+                showToast('URLhaus sorgusu tamamlandı.');
+            } catch (e) {
+                alert('Sorgu hatası: ' + e);
+            }
+        }
+
+        async function scanStalkerware() {
+            const tbody = document.getElementById('stalkerware-table-body');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--cyan); padding:25px;">
+                EFF Coalition Against Stalkerware & Citizen Lab kurallarıyla canlı süreçler taranıyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/stalkerware');
+                const data = await res.json();
+
+                tbody.innerHTML = '';
+                if (!data.threats || data.threats.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--emerald); padding: 25px;">
+                        [OK] Sistemde hiçbir ticari casus yazılım (Stalkerware) veya gizli ekran/tuş kaydedici bulunmadı. Sistem güvenli.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.threats.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${t.pid}</strong></td>
+                        <td><strong style="color: #fff;">${t.process_name}</strong></td>
+                        <td><span style="color: var(--rose);">${t.app_name}</span></td>
+                        <td><span class="pill pill-purple">${t.category}</span></td>
+                        <td><span class="pill pill-high">${t.mitre_technique}</span></td>
+                        <td><span class="pill pill-critical">${t.severity}</span></td>
+                        <td><div style="font-size: 11px; max-width: 250px; color: var(--text-muted);">${t.description}</div></td>
+                        <td>
+                            <button class="btn-danger" onclick="killStalkerwareProc(${t.pid})">Sonlandır (Kill)</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                showToast('Casus yazılım taraması tamamlandı.');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--rose); padding:20px;">Hata: ${e}</td></tr>`;
+            }
+        }
+
+        async function killStalkerwareProc(pid) {
+            if (!confirm(`PID ${pid} casus yazılım sürecini derhal zorla sonlandırmak istiyor musunuz?`)) return;
+            try {
+                const res = await fetch('/api/stalkerware/kill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast(`PID ${pid} casus süreci başarıyla sonlandırıldı!`);
+                    scanStalkerware();
+                } else {
+                    alert('Süreç sonlandırılamadı: ' + (d.error || 'Erişim engellendi'));
+                }
+            } catch (e) {
+                alert('İstek hatası: ' + e);
+            }
+        }
+
+        async function scanSigma() {
+            const tbody = document.getElementById('sigma-table-body');
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--cyan); padding:25px;">
+                SigmaHQ kuralları canlı süreç komut satırlarıyla eşleştiriliyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/sigma');
+                const data = await res.json();
+
+                tbody.innerHTML = '';
+                if (!data.detections || data.detections.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--emerald); padding: 25px;">
+                        [OK] Canlı süreçlerde hiçbir Sigma kural eşleşmesi veya şüpheli LOLBAS/PowerShell indirme beşiği tespit edilmedi.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.detections.forEach(d => {
+                    const tr = document.createElement('tr');
+                    const pillClass = d.level === 'critical' ? 'pill-critical' : (d.level === 'high' ? 'pill-high' : 'pill-purple');
+                    tr.innerHTML = `
+                        <td><strong style="color: #fff;">${d.rule_title}</strong></td>
+                        <td><span class="pill ${pillClass}">${d.level}</span></td>
+                        <td><code>${d.pid}</code></td>
+                        <td><span style="color: var(--cyan);">${d.process_name}</span></td>
+                        <td><span style="color: var(--text-muted);">${d.parent_name}</span></td>
+                        <td><span class="pill pill-high">${(d.mitre_attack || []).join(', ')}</span></td>
+                        <td><code style="font-size: 10.5px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; display: inline-block;">${d.command_line}</code></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                showToast('SigmaHQ taraması tamamlandı.');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--rose); padding:20px;">Hata: ${e}</td></tr>`;
+            }
+        }
+
+        async function scanStealers() {
+            const tbody = document.getElementById('stealers-table-body');
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--cyan); padding:25px;">
+                Tarayıcı şifre kasaları ve kripto cüzdan hedefleme denetimi yapılıyor...
+            </td></tr>`;
+
+            try {
+                const res = await fetch('/api/stealers');
+                const data = await res.json();
+
+                tbody.innerHTML = '';
+                if (!data.threats || data.threats.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--emerald); padding: 25px;">
+                        [OK] Hiçbir güvensiz süreç Chrome/Edge 'Login Data', çerezler veya kripto cüzdan depolarını hedeflemiyor. Sistem koruma altında.
+                    </td></tr>`;
+                    return;
+                }
+
+                data.threats.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${t.pid}</strong></td>
+                        <td><strong style="color: #fff;">${t.process_name}</strong></td>
+                        <td><span style="color: var(--rose); font-weight: 600;">${t.target_asset}</span></td>
+                        <td><span class="pill pill-purple">${t.category}</span></td>
+                        <td><span class="pill pill-high">${t.mitre_technique}</span></td>
+                        <td><div style="font-size: 11px; max-width: 260px; color: var(--text-muted);">${t.description}</div></td>
+                        <td><div style="font-size: 11px; color: var(--emerald);">${t.recommendation}</div></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                showToast('Stealer kasa taraması tamamlandı.');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--rose); padding:20px;">Hata: ${e}</td></tr>`;
+            }
+        }
+
+        // ==========================================
+        // SETTINGS & CONFIGURATION MANAGEMENT
+        // ==========================================
+        let guardSettings = null;
+
+        function switchSettingsSub(panelId) {
+            document.querySelectorAll('.settings-subpanel').forEach(p => p.style.display = 'none');
+            const target = document.getElementById('subpanel-settings-' + panelId);
+            if (target) target.style.display = 'block';
+
+            const buttons = ['rtp', 'exclusions', 'privacy', 'modes', 'feeds', 'edr', 'general'];
+            buttons.forEach(b => {
+                const btn = document.getElementById('btn-settings-' + b);
+                if (btn) {
+                    btn.className = (b === panelId) ? 'btn' : 'btn-secondary';
+                }
+            });
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.status === 'ok' && data.config) {
+                    guardSettings = data.config;
+                    populateSettingsForm(guardSettings);
+                }
+            } catch (e) {
+                console.error('Ayarlar yüklenemedi:', e);
+                showToast('Ayarlar yüklenirken hata: ' + e);
+            }
+        }
+
+        function populateSettingsForm(cfg) {
+            if (!cfg) return;
+
+            // RTP
+            document.getElementById('cfg-rtp-enabled').checked = !!cfg.rtp?.enabled;
+            document.getElementById('cfg-rtp-action').value = cfg.rtp?.action_on_threat || 'auto_quarantine';
+            document.getElementById('cfg-rtp-scan-archives').checked = !!cfg.rtp?.scan_archives;
+            document.getElementById('cfg-rtp-scan-heuristics').checked = !!cfg.rtp?.scan_heuristics;
+            document.getElementById('cfg-rtp-scan-yara').checked = !!cfg.rtp?.scan_yara;
+            document.getElementById('cfg-rtp-archive-depth').value = cfg.rtp?.archive_max_depth || 3;
+            document.getElementById('cfg-rtp-max-size').value = cfg.rtp?.max_file_size_mb || 250;
+            document.getElementById('val-rtp-max-size').innerText = (cfg.rtp?.max_file_size_mb || 250) + ' MB';
+            renderTagContainer('monitored_paths', 'tags-monitored_paths', cfg.rtp?.monitored_paths || []);
+
+            // Exclusions
+            renderTagContainer('excluded_paths', 'tags-excluded_paths', cfg.exclusions?.excluded_paths || []);
+            renderTagContainer('excluded_extensions', 'tags-excluded_extensions', cfg.exclusions?.excluded_extensions || []);
+            renderTagContainer('excluded_processes', 'tags-excluded_processes', cfg.exclusions?.excluded_processes || []);
+            renderTagContainer('trusted_hashes_sha256', 'tags-trusted_hashes_sha256', cfg.exclusions?.trusted_hashes_sha256 || []);
+
+            // Privacy
+            document.getElementById('cfg-privacy-enabled').checked = !!cfg.privacy?.enabled;
+            document.getElementById('cfg-privacy-alert-camera').checked = !!cfg.privacy?.alert_on_camera;
+            document.getElementById('cfg-privacy-alert-mic').checked = !!cfg.privacy?.alert_on_microphone;
+            document.getElementById('cfg-privacy-notify-toast').checked = !!cfg.privacy?.notify_toast;
+            document.getElementById('cfg-privacy-strict').checked = !!cfg.privacy?.strict_untrusted_alert;
+            document.getElementById('cfg-privacy-poll').value = cfg.privacy?.poll_interval_seconds || 2;
+            document.getElementById('val-privacy-poll').innerText = (cfg.privacy?.poll_interval_seconds || 2) + ' sn';
+            renderTagContainer('whitelisted_apps', 'tags-whitelisted_apps', cfg.privacy?.whitelisted_apps || []);
+
+            // Modes
+            document.getElementById('cfg-mode-auto-game').checked = !!cfg.system_mode?.auto_game_mode;
+            document.getElementById('cfg-mode-debloat-work').checked = !!cfg.system_mode?.debloat_on_work_mode;
+            document.getElementById('cfg-mode-pause-battery').checked = !!cfg.system_mode?.pause_scans_on_battery;
+            document.getElementById('cfg-mode-cpu-limit').value = cfg.system_mode?.background_cpu_limit_percent || 40;
+            document.getElementById('val-mode-cpu-limit').innerText = '%' + (cfg.system_mode?.background_cpu_limit_percent || 40);
+
+            // Feeds
+            document.getElementById('cfg-feeds-auto-update').checked = !!cfg.feeds?.auto_update_enabled;
+            document.getElementById('cfg-feeds-update-interval').value = cfg.feeds?.update_interval_hours || 6;
+            document.getElementById('cfg-feeds-offline').checked = !!cfg.feeds?.offline_airgapped_mode;
+            document.getElementById('cfg-feeds-usom').checked = !!cfg.feeds?.usom_enabled;
+            document.getElementById('cfg-feeds-malwarebazaar').checked = !!cfg.feeds?.malwarebazaar_enabled;
+            document.getElementById('cfg-feeds-threatfox').checked = !!cfg.feeds?.threatfox_enabled;
+            document.getElementById('cfg-feeds-urlhaus').checked = !!cfg.feeds?.urlhaus_enabled;
+            document.getElementById('cfg-feeds-spamhaus').checked = !!cfg.feeds?.spamhaus_enabled;
+            document.getElementById('cfg-feeds-sans').checked = !!cfg.feeds?.sans_dshield_enabled;
+            document.getElementById('cfg-feeds-yara').checked = !!cfg.feeds?.yara_forge_enabled;
+
+            // EDR
+            document.getElementById('cfg-edr-canary-action').value = cfg.edr?.canary_trip_action || 'kill_process';
+            document.getElementById('cfg-edr-memory-action').value = cfg.edr?.memory_injection_action || 'suspend_thread';
+            document.getElementById('cfg-edr-lolbas-kill').checked = !!cfg.edr?.lolbas_auto_kill;
+            document.getElementById('cfg-edr-byovd-alert').checked = !!cfg.edr?.byovd_driver_alert;
+            document.getElementById('cfg-edr-c2-block').checked = !!cfg.edr?.network_c2_block;
+
+            // General
+            document.getElementById('cfg-general-lang').value = cfg.general?.language || 'tr';
+            document.getElementById('cfg-general-start-windows').checked = !!cfg.general?.start_with_windows;
+            document.getElementById('cfg-general-tray').checked = !!cfg.general?.minimize_to_tray;
+            document.getElementById('cfg-general-service').checked = !!cfg.general?.run_as_service;
+            document.getElementById('cfg-general-log-level').value = cfg.general?.log_level || 'info';
+            document.getElementById('cfg-general-webhook').value = cfg.general?.remote_syslog_webhook || '';
+        }
+
+        function renderTagContainer(fieldKey, containerId, items) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<span style="font-size: 11.5px; color: var(--text-muted); font-style: italic;">Henüz öğe eklenmedi.</span>';
+                return;
+            }
+            items.forEach((item, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'tag-chip';
+                chip.innerHTML = `
+                    <span>${escapeHtml(item)}</span>
+                    <span class="tag-remove" onclick="removeTagItem('${fieldKey}', ${index})">×</span>
+                `;
+                container.appendChild(chip);
+            });
+        }
+
+        function addTagItem(fieldKey, inputId) {
+            const input = document.getElementById(inputId);
+            if (!input || !input.value.trim()) return;
+            const val = input.value.trim();
+            if (!guardSettings) guardSettings = {};
+
+            if (fieldKey === 'monitored_paths') {
+                if (!guardSettings.rtp) guardSettings.rtp = {};
+                if (!guardSettings.rtp.monitored_paths) guardSettings.rtp.monitored_paths = [];
+                if (!guardSettings.rtp.monitored_paths.includes(val)) guardSettings.rtp.monitored_paths.push(val);
+                renderTagContainer('monitored_paths', 'tags-monitored_paths', guardSettings.rtp.monitored_paths);
+            } else if (fieldKey === 'whitelisted_apps') {
+                if (!guardSettings.privacy) guardSettings.privacy = {};
+                if (!guardSettings.privacy.whitelisted_apps) guardSettings.privacy.whitelisted_apps = [];
+                if (!guardSettings.privacy.whitelisted_apps.includes(val)) guardSettings.privacy.whitelisted_apps.push(val);
+                renderTagContainer('whitelisted_apps', 'tags-whitelisted_apps', guardSettings.privacy.whitelisted_apps);
+            } else {
+                if (!guardSettings.exclusions) guardSettings.exclusions = {};
+                if (!guardSettings.exclusions[fieldKey]) guardSettings.exclusions[fieldKey] = [];
+                if (!guardSettings.exclusions[fieldKey].includes(val)) guardSettings.exclusions[fieldKey].push(val);
+                renderTagContainer(fieldKey, 'tags-' + fieldKey, guardSettings.exclusions[fieldKey]);
+            }
+            input.value = '';
+        }
+
+        function removeTagItem(fieldKey, index) {
+            if (!guardSettings) return;
+            if (fieldKey === 'monitored_paths') {
+                if (guardSettings.rtp?.monitored_paths) {
+                    guardSettings.rtp.monitored_paths.splice(index, 1);
+                    renderTagContainer('monitored_paths', 'tags-monitored_paths', guardSettings.rtp.monitored_paths);
+                }
+            } else if (fieldKey === 'whitelisted_apps') {
+                if (guardSettings.privacy?.whitelisted_apps) {
+                    guardSettings.privacy.whitelisted_apps.splice(index, 1);
+                    renderTagContainer('whitelisted_apps', 'tags-whitelisted_apps', guardSettings.privacy.whitelisted_apps);
+                }
+            } else {
+                if (guardSettings.exclusions?.[fieldKey]) {
+                    guardSettings.exclusions[fieldKey].splice(index, 1);
+                    renderTagContainer(fieldKey, 'tags-' + fieldKey, guardSettings.exclusions[fieldKey]);
+                }
+            }
+        }
+
+        async function saveSettings() {
+            try {
+                if (!guardSettings) guardSettings = {};
+
+                const payload = {
+                    schema_version: 1,
+                    general: {
+                        language: document.getElementById('cfg-general-lang').value,
+                        start_with_windows: document.getElementById('cfg-general-start-windows').checked,
+                        minimize_to_tray: document.getElementById('cfg-general-tray').checked,
+                        run_as_service: document.getElementById('cfg-general-service').checked,
+                        log_level: document.getElementById('cfg-general-log-level').value,
+                        remote_syslog_webhook: document.getElementById('cfg-general-webhook').value.trim() || null
+                    },
+                    rtp: {
+                        enabled: document.getElementById('cfg-rtp-enabled').checked,
+                        monitored_paths: guardSettings.rtp?.monitored_paths || [],
+                        action_on_threat: document.getElementById('cfg-rtp-action').value,
+                        max_file_size_mb: parseInt(document.getElementById('cfg-rtp-max-size').value, 10) || 250,
+                        scan_archives: document.getElementById('cfg-rtp-scan-archives').checked,
+                        archive_max_depth: parseInt(document.getElementById('cfg-rtp-archive-depth').value, 10) || 3,
+                        scan_heuristics: document.getElementById('cfg-rtp-scan-heuristics').checked,
+                        scan_yara: document.getElementById('cfg-rtp-scan-yara').checked
+                    },
+                    exclusions: {
+                        excluded_paths: guardSettings.exclusions?.excluded_paths || [],
+                        excluded_extensions: guardSettings.exclusions?.excluded_extensions || [],
+                        excluded_processes: guardSettings.exclusions?.excluded_processes || [],
+                        trusted_hashes_sha256: guardSettings.exclusions?.trusted_hashes_sha256 || []
+                    },
+                    privacy: {
+                        enabled: document.getElementById('cfg-privacy-enabled').checked,
+                        poll_interval_seconds: parseInt(document.getElementById('cfg-privacy-poll').value, 10) || 2,
+                        alert_on_camera: document.getElementById('cfg-privacy-alert-camera').checked,
+                        alert_on_microphone: document.getElementById('cfg-privacy-alert-mic').checked,
+                        notify_toast: document.getElementById('cfg-privacy-notify-toast').checked,
+                        whitelisted_apps: guardSettings.privacy?.whitelisted_apps || [],
+                        strict_untrusted_alert: document.getElementById('cfg-privacy-strict').checked
+                    },
+                    system_mode: {
+                        auto_game_mode: document.getElementById('cfg-mode-auto-game').checked,
+                        debloat_on_work_mode: document.getElementById('cfg-mode-debloat-work').checked,
+                        background_cpu_limit_percent: parseInt(document.getElementById('cfg-mode-cpu-limit').value, 10) || 40,
+                        pause_scans_on_battery: document.getElementById('cfg-mode-pause-battery').checked
+                    },
+                    feeds: {
+                        auto_update_enabled: document.getElementById('cfg-feeds-auto-update').checked,
+                        update_interval_hours: parseInt(document.getElementById('cfg-feeds-update-interval').value, 10) || 6,
+                        usom_enabled: document.getElementById('cfg-feeds-usom').checked,
+                        malwarebazaar_enabled: document.getElementById('cfg-feeds-malwarebazaar').checked,
+                        threatfox_enabled: document.getElementById('cfg-feeds-threatfox').checked,
+                        urlhaus_enabled: document.getElementById('cfg-feeds-urlhaus').checked,
+                        spamhaus_enabled: document.getElementById('cfg-feeds-spamhaus').checked,
+                        sans_dshield_enabled: document.getElementById('cfg-feeds-sans').checked,
+                        yara_forge_enabled: document.getElementById('cfg-feeds-yara').checked,
+                        offline_airgapped_mode: document.getElementById('cfg-feeds-offline').checked
+                    },
+                    edr: {
+                        canary_trip_action: document.getElementById('cfg-edr-canary-action').value,
+                        memory_injection_action: document.getElementById('cfg-edr-memory-action').value,
+                        lolbas_auto_kill: document.getElementById('cfg-edr-lolbas-kill').checked,
+                        byovd_driver_alert: document.getElementById('cfg-edr-byovd-alert').checked,
+                        network_c2_block: document.getElementById('cfg-edr-c2-block').checked
+                    }
+                };
+
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    showToast(data.message || 'Ayarlar başarıyla kaydedildi!');
+                    guardSettings = payload;
+                    // Eğer dil değiştiyse UI dilini de senkronize et
+                    if (payload.general.language !== currentLang) {
+                        setLanguage(payload.general.language);
+                    }
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            } catch (e) {
+                alert('Ayarlar kaydedilirken ağ hatası: ' + e);
+            }
+        }
+
+        async function resetSettings() {
+            const confirmMsg = currentLang === 'tr' 
+                ? 'Tüm yapılandırmayı fabrika ayarlarına sıfırlamak istediğinizden emin misiniz?' 
+                : 'Are you sure you want to reset all settings to factory defaults?';
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const res = await fetch('/api/settings/reset', { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    showToast(data.message || 'Fabrika ayarlarına sıfırlandı.');
+                    guardSettings = data.config;
+                    populateSettingsForm(guardSettings);
+                } else {
+                    alert('Sıfırlama hatası: ' + data.message);
+                }
+            } catch (e) {
+                alert('Ağ hatası: ' + e);
+            }
+        }
+
+        function exportSettings() {
+            window.open('/api/settings/export', '_blank');
+        }
+
+        async function handleSettingsImport(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                const res = await fetch('/api/settings/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parsed)
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    showToast(data.message || 'Yapılandırma başarıyla yüklendi!');
+                    guardSettings = data.config || parsed;
+                    populateSettingsForm(guardSettings);
+                } else {
+                    alert('İçe aktarma hatası: ' + data.message);
+                }
+            } catch (err) {
+                alert('Geçersiz JSON dosyası: ' + err);
+            } finally {
+                e.target.value = '';
+            }
+        }
+
         async function shutdownApp() {
             const msg = currentLang === 'tr' 
                 ? 'Project Guard kontrol merkezini ve arka plan motorunu kapatmak istediğinizden emin misiniz?' 
@@ -3257,6 +5409,31 @@ IEX $client.DownloadString($url)`;
             }
         }
 
+        function toggleChromeGuideModal() {
+            const el = document.getElementById('chrome-guide-drawer');
+            if (el) {
+                el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+            }
+        }
+
+        async function packageExtensionViaApi() {
+            const btn = document.getElementById('btn-repackage-ext');
+            if (btn) btn.innerHTML = '<span>⏳</span> Paket Derleniyor...';
+            try {
+                const res = await fetch('/api/extension/package', { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    alert(`✅ Chrome Web Shield başarıyla paketlendi!\n\nBoyut: ${data.size_kb}\nSHA-256: ${data.sha256}`);
+                } else {
+                    alert(`❌ Paketleme hatası: ${data.message}`);
+                }
+            } catch (e) {
+                alert(`❌ İstek hatası: ${e.message}`);
+            } finally {
+                if (btn) btn.innerHTML = '<span>⚡</span> <span data-i18n="btn_repackage_extension">Yeniden Paketle</span>';
+            }
+        }
+
         // İlk yükleme (Language, Status & Service)
         setLanguage(currentLang);
         loadStatus();
@@ -3264,3 +5441,4 @@ IEX $client.DownloadString($url)`;
     </script>
 </body>
 </html>
+

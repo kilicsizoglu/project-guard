@@ -1,0 +1,75 @@
+{
+  "name": "project-guard-vscode",
+  "displayName": "Project Guard - Security & EDR Code Scanner",
+  "description": "VS Code için Project Guard Tehdit Avcılığı: Zararlı kod, YARA imzaları, CISA Honeytoken sızıntıları ve zafiyet denetimi",
+  "version": "1.0.0",
+  "publisher": "ProjectGuard",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Security",
+    "Linters",
+    "Programming Languages"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "projectguard.scanCurrentFile",
+        "title": "Project Guard: Aktif Dosyayı Güvenlik Taramasından Geçir",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "projectguard.scanWorkspace",
+        "title": "Project Guard: Tüm Çalışma Alanını Tara",
+        "icon": "$(search)"
+      },
+      {
+        "command": "projectguard.checkCisaKev",
+        "title": "Project Guard: CISA KEV Zafiyetlerini Denetle",
+        "icon": "$(warning)"
+      },
+      {
+        "command": "projectguard.openSoc",
+        "title": "Project Guard: Web SOC Konsolunu Aç",
+        "icon": "$(dashboard)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "projectguard-activitybar",
+          "title": "Project Guard EDR",
+          "icon": "resources/shield.svg"
+        }
+      ]
+    },
+    "views": {
+      "projectguard-activitybar": [
+        {
+          "id": "projectguard.threatExplorer",
+          "name": "Tehdit & Güvenlik Paneli"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Project Guard",
+      "properties": {
+        "projectguard.daemonUrl": {
+          "type": "string",
+          "default": "http://localhost:7890",
+          "description": "Project Guard yerel REST API adresi"
+        },
+        "projectguard.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Dosya kaydedildiğinde otomatik güvenlik analizi yap"
+        }
+      }
+    }
+  }
+}

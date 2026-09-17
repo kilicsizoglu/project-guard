@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="url(#bgGrad)" stroke="#334155" stroke-width="2" />
+  
+  <!-- Outer Shield -->
+  <path d="M64 24 L100 38 V68 C100 88 84 104 64 110 C44 104 28 88 28 68 V38 Z" 
+        fill="none" stroke="url(#shieldGrad)" stroke-width="5" stroke-linejoin="round" />
+        
+  <!-- Inner Shield Fill -->
+  <path d="M64 30 L94 42 V68 C94 84 80 98 64 103 C48 98 34 84 34 68 V42 Z" 
+        fill="url(#shieldGrad)" fill-opacity="0.15" />
+
+  <!-- Container Box Blocks inside Shield -->
+  <rect x="52" y="52" width="10" height="10" rx="1.5" fill="#38BDF8" />
+  <rect x="66" y="52" width="10" height="10" rx="1.5" fill="#38BDF8" />
+  <rect x="52" y="66" width="10" height="10" rx="1.5" fill="#10B981" />
+  <rect x="66" y="66" width="10" height="10" rx="1.5" fill="#10B981" />
+  <rect x="59" y="38" width="10" height="10" rx="1.5" fill="#38BDF8" />
+</svg>

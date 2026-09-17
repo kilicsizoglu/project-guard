@@ -1,0 +1,6 @@
+services:
+  project-guard-agent:
+    image: ${DESKTOP_PLUGIN_IMAGE}
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

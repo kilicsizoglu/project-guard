@@ -18,6 +18,20 @@ pub const PAGE_EXECUTE_WRITECOPY: u32 = 0x80;
 pub const DRIVE_REMOVABLE: u32 = 2;
 pub const DRIVE_FIXED: u32 = 3;
 
+/// Windows konsol penceresinin açılmasını engelleyen Win32 bayrağı
+pub const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+/// Windows üzerinde konsol penceresi (siyah terminal) fırlamasını önleyen güvenli komut oluşturucu
+pub fn create_hidden_command<S: AsRef<std::ffi::OsStr>>(program: S) -> std::process::Command {
+    let mut cmd = std::process::Command::new(program);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+    cmd
+}
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct MemoryBasicInformation {

@@ -11,7 +11,8 @@
 
 [CmdletBinding()]
 param(
-    [string]$Version = "1.1.0"
+    [string]$Version = "1.1.0",
+    [switch]$SkipCargoBuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -25,13 +26,13 @@ Write-Host ""
 
 # 1. Release Binary Check / Build
 $releaseExe = Join-Path $projectRoot "target\release\project-guard.exe"
-if (-not (Test-Path $releaseExe)) {
-    Write-Host "[1/4] Release ikilisi derleniyor (cargo build --release)..." -ForegroundColor Yellow
+if (-not (Test-Path $releaseExe) -or -not $SkipCargoBuild) {
+    Write-Host "[1/4] Release ikilisi derleniyor / guncelleniyor (cargo build --release)..." -ForegroundColor Yellow
     Push-Location $projectRoot
     cargo build --release
     Pop-Location
 } else {
-    Write-Host "[1/4] Release ikilisi hazir: $releaseExe" -ForegroundColor Green
+    Write-Host "[1/4] Mevcut release ikilisi kullaniliyor: $releaseExe" -ForegroundColor Green
 }
 
 # 2. Prepare isolated staging directory in TEMP (avoid OneDrive file locks)
@@ -65,6 +66,13 @@ foreach ($doc in $docs) {
         Copy-Item -Path $src -Destination $tempStaging -Force
     }
 }
+
+# Chrome Eklentisini Paketle ve Kopyala
+Write-Host "  -> Chrome Web Shield eklentisi paketleniyor..." -ForegroundColor Cyan
+& (Join-Path $scriptDir "package_extension.ps1")
+$destExtensions = Join-Path $tempStaging "extensions"
+New-Item -ItemType Directory -Path $destExtensions -Force | Out-Null
+Copy-Item -Path (Join-Path $projectRoot "extensions\*") -Destination $destExtensions -Recurse -Force
 
 # 3. Create Payload Zip
 Write-Host "[3/4] Tasinabilir paket arşivi derleniyor..." -ForegroundColor Cyan

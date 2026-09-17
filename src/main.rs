@@ -1,5 +1,6 @@
 #![windows_subsystem = "windows"]
 
+mod config;
 mod core;
 mod db;
 mod engines;
@@ -23,6 +24,7 @@ use engines::{ClamAvEngine, HashEngine, HeuristicEngine, ProcessScanner, ScanEng
 use feeds::FeedUpdater;
 use monitor::RealTimeMonitor;
 use quarantine::QuarantineManager;
+use sha2::Digest;
 
 #[cfg(windows)]
 pub fn hide_console() {
@@ -48,8 +50,33 @@ pub fn attach_console_for_cli() {
     unsafe {
         unsafe extern "system" {
             fn AttachConsole(dwProcessId: u32) -> i32;
+            fn SetStdHandle(nStdHandle: u32, hHandle: *mut std::ffi::c_void) -> i32;
+            fn CreateFileW(
+                lpFileName: *const u16,
+                dwDesiredAccess: u32,
+                dwShareMode: u32,
+                lpSecurityAttributes: *mut std::ffi::c_void,
+                dwCreationDisposition: u32,
+                dwFlagsAndAttributes: u32,
+                hTemplateFile: *mut std::ffi::c_void,
+            ) -> *mut std::ffi::c_void;
         }
-        AttachConsole(0xFFFFFFFF); // ATTACH_PARENT_PROCESS
+        if AttachConsole(0xFFFFFFFF) != 0 {
+            let conout: Vec<u16> = "CONOUT$\0".encode_utf16().collect();
+            let handle = CreateFileW(
+                conout.as_ptr(),
+                0x40000000 | 0x80000000,
+                1 | 2,
+                std::ptr::null_mut(),
+                3,
+                0,
+                std::ptr::null_mut(),
+            );
+            if !handle.is_null() && handle != (-1isize as *mut std::ffi::c_void) {
+                SetStdHandle(0xFFFFFFF5, handle); // STD_OUTPUT_HANDLE
+                SetStdHandle(0xFFFFFFF4, handle); // STD_ERROR_HANDLE
+            }
+        }
     }
 }
 
@@ -243,6 +270,152 @@ enum Commands {
         #[command(subcommand)]
         action: ServiceCommands,
     },
+
+    /// CISA Bilinen ve Aktif İstismar Edilen Zafiyetler Kataloğu (CISA KEV) denetimini yürütür
+    CisaKev,
+
+    /// Windows Dosya Gezgini (Explorer) sağ tık menüsüne 'Project Guard ile Tara' seçeneğini kaydeder
+    RegisterShell {
+        /// Özel ikili dosya yolu (Varsayılan: çalışan project-guard.exe)
+        #[arg(short, long)]
+        exe_path: Option<PathBuf>,
+    },
+
+    /// Windows Dosya Gezgini (Explorer) sağ tık menüsünü kaldırır
+    UnregisterShell,
+
+    /// USOM (Siber Güvenlik Başkanlığı) güncel zararlı bağlantı ve C2 istihbaratını senkronize eder
+    UpdateUsom,
+
+    /// Shadowserver StealC infostealer tehditlerine karşı süreçleri ve hassas kimlik depolarını tarar
+    ScanStealers {
+        /// Tespit edilen zararlı süreçleri anında zorla sonlandır (KILL)
+        #[arg(short, long)]
+        kill: bool,
+    },
+
+    /// Center for Internet Security (CIS) Controls v8.1 ve Windows Hardening denetimini yürütür
+    CisAudit,
+
+    /// OpenSSF ve OWASP A03 yazılım tedarik zinciri (Supply Chain) ve bağımlılık taraması yapar
+    ScanSupplyChain {
+        /// Taranacak proje veya kaynak kod dizini
+        #[arg(default_value = ".")]
+        target: PathBuf,
+    },
+
+    /// FIRST.org EPSS (Exploit Prediction Scoring System) ile zafiyet istismar olasılığını sorgular
+    EpssLookup {
+        /// Sorgulanacak CVE numarası (Örn: CVE-2024-21338 veya 2024-38063)
+        cve: String,
+    },
+
+    /// SANS ISC DShield bal küpü tehdit istihbaratından en çok saldıran IP'leri senkronize eder
+    UpdateSans {
+        /// Çekilecek maksimum IP sayısı (Varsayılan: 25)
+        #[arg(short, long, default_value_t = 25)]
+        limit: usize,
+    },
+
+    /// SigmaHQ açık kaynak kural standartlarıyla süreç ve komut satırı davranış anomalilerini tarar
+    ScanSigma {
+        /// Kritik tespit edilen süreçleri anında zorla sonlandır (KILL)
+        #[arg(short, long)]
+        kill: bool,
+    },
+
+    /// The Spamhaus Project DROP ve eDROP kurşun geçirmez botnet ağlarını senkronize eder
+    UpdateSpamhaus,
+
+    /// Abuse.ch URLhaus veritabanından en güncel aktif zararlı URL ve indirme beşikleri senkronize eder
+    UpdateUrlhaus {
+        /// Çekilecek maksimum kayıt sayısı (Varsayılan: 500)
+        #[arg(short, long, default_value_t = 500)]
+        limit: usize,
+    },
+
+    /// Abuse.ch URLhaus ve yerel tehdit veritabanında bir bağlantının (URL) itibarını sorgular
+    LookupUrl {
+        /// Sorgulanacak web adresi / URL
+        url: String,
+    },
+
+    /// EFF ve Citizen Lab yönergeleriyle gizli casus yazılımları, takip ajanlarını ve dinleyicileri tarar
+    ScanStalkerware {
+        /// Tespit edilen casus yazılım süreçlerini anında zorla sonlandır (KILL)
+        #[arg(short, long)]
+        kill: bool,
+    },
+
+    /// Kamera ve mikrofon donanımını kullanan uygulamaları ve anlık erişim durumunu listeler
+    PrivacyStatus,
+
+    /// Kamera ve mikrofon erişimlerini canlı izler; donanım açıldığında Windows Toast bildirimi fırlatır
+    PrivacyWatch {
+        /// Denetim aralığı (saniye, varsayılan: 2)
+        #[arg(short, long, default_value_t = 2)]
+        interval: u64,
+    },
+
+    /// Windows Oyun ve İş/Gizlilik Modu yönetimi (WinDebloat ve Performans Optimizasyonu)
+    Mode {
+        #[command(subcommand)]
+        action: Option<ModeCommands>,
+    },
+
+    /// Windows Bildirim Merkezine (Action Center) yerel Toast bildirimi gönderir
+    Notify {
+        /// Bildirim başlığı
+        #[arg(short, long)]
+        title: String,
+        /// Bildirim mesaj metni
+        #[arg(short, long)]
+        message: String,
+    },
+
+    /// Merkezi ayarlar ve yapılandırma yönetimi (göster, değiştir, sıfırla, içe/dışa aktar)
+    Config {
+        #[command(subcommand)]
+        action: Option<ConfigCommands>,
+    },
+
+    /// Windows Sistem Tepsisinde (System Tray / Görev Çubuğu Bildirim Alanı) çalıştırır
+    Tray {
+        /// Calisacagi yerel port (Varsayilan: 7890)
+        #[arg(short, long, default_value_t = 7890)]
+        port: u16,
+    },
+
+    /// Chrome Web Shield (Web Kalkanı) tarayıcı eklentisini doğrular ve .zip olarak paketler
+    PackageExtension,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+enum ConfigCommands {
+    /// Mevcut tüm yapılandırma parametrelerini gösterir
+    Show,
+    /// Belirtilen ayar anahtarının değerini okur (Örn: rtp.max_file_size_mb)
+    Get { key: String },
+    /// Belirtilen ayarın değerini günceller ve kaydeder (Örn: rtp.max_file_size_mb 500)
+    Set { key: String, value: String },
+    /// Ayarları fabrika varsayılanlarına sıfırlar
+    Reset,
+    /// Yapılandırmayı JSON dosyası olarak dışa aktarır
+    Export { path: Option<PathBuf> },
+    /// JSON dosyasından yapılandırmayı yükler ve uygular
+    Import { path: PathBuf },
+}
+
+#[derive(Subcommand, Debug, Clone)]
+enum ModeCommands {
+    /// Mevcut çalışma modunu ve optimizasyon parametrelerini sorgular
+    Status,
+    /// Oyun Modunu devreye sokar (Ultra düşük gecikme, NetworkThrottling iptali, GPU önceliği)
+    Game,
+    /// İş ve Gizlilik Modunu devreye sokar (WinDebloat telemetri temizliği, Bing kapatma, reklam ID iptali)
+    Work,
+    /// Tüm ayarları orijinal Windows varsayılanlarına geri yükler (Rollback)
+    Restore,
 }
 
 #[derive(Subcommand)]
@@ -345,10 +518,12 @@ fn main() {
         
         #[cfg(windows)]
         {
+            use std::os::windows::process::CommandExt;
             // Basit bir uyarı göstermek için PowerShell'i kullan (Harici kütüphane gerektirmeyen fallback)
             let msg = format!("Project Guard başlatılamadı. Hata detayı: {}", temp_log.display());
             let _ = std::process::Command::new("powershell")
                 .args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &format!("[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); [System.Windows.Forms.MessageBox]::Show('{}', 'Project Guard Hata', 0, 16)", msg)])
+                .creation_flags(0x08000000)
                 .spawn();
         }
 
@@ -361,7 +536,7 @@ fn run_main() -> Result<()> {
     let command = cli.command.unwrap_or(Commands::Gui { port: 7890 });
 
     match &command {
-        Commands::Gui { .. } => {
+        Commands::Gui { .. } | Commands::Tray { .. } => {
             hide_console();
         }
         _ => {
@@ -661,9 +836,9 @@ fn run_main() -> Result<()> {
             let canary_mgr = engines::CanaryManager::new(&base_dir);
             match canary_mgr.deploy_canaries(&target_dir) {
                 Ok(files) => {
-                    println!("{}", format!("[+] {} adet tuzak (Canary) yem dosyasi basariyla yerlestirildi:", files.len()).green().bold());
+                    println!("{}", format!("[+] {} adet tuzak (Canary & CISA Honeytoken) yem dosyasi basariyla yerlestirildi:", files.len()).green().bold());
                     for f in files {
-                        println!("  -> Dosya: {} (SHA256: {})", f.filename.yellow(), f.initial_sha256);
+                        println!("  -> [{}] {} (SHA256: {})", f.decoy_type.magenta(), f.filename.yellow(), f.initial_sha256);
                     }
                     println!("\nBu dizini canli izlemek icin su komutu calistirabilirsiniz:\n  guard canary-watch {:?}", target_dir);
                 }
@@ -1167,6 +1342,7 @@ fn run_main() -> Result<()> {
             println!("Yerel Baglanti: http://127.0.0.1:{}", port);
             let (orchestrator, q_mgr, _, yara_eng) = build_orchestrator(Arc::clone(&db), quarantine_dir, rules_dir.clone())?;
             let base_dir = dirs_base();
+            let config = Arc::new(tokio::sync::RwLock::new(config::GuardConfig::load()));
             let state = ui::AppState {
                 db: Arc::clone(&db),
                 orchestrator: Arc::new(orchestrator),
@@ -1175,16 +1351,19 @@ fn run_main() -> Result<()> {
                 yara_engine: yara_eng,
                 rules_dir,
                 base_dir,
+                config,
             };
 
             let rt = tokio::runtime::Runtime::new()?;
-            rt.block_on(ui::start_web_ui(state, port))?;
+            rt.block_on(ui::start_web_ui(state, port, true))?;
         }
 
-        Commands::Gui { port } => {
+        Commands::Gui { port } | Commands::Tray { port } => {
+            let is_tray_only = matches!(command, Commands::Tray { .. });
             hide_console();
             let (orchestrator, q_mgr, _, yara_eng) = build_orchestrator(Arc::clone(&db), quarantine_dir, rules_dir.clone())?;
             let base_dir = dirs_base();
+            let config = Arc::new(tokio::sync::RwLock::new(config::GuardConfig::load()));
             let state = ui::AppState {
                 db: Arc::clone(&db),
                 orchestrator: Arc::new(orchestrator),
@@ -1193,10 +1372,31 @@ fn run_main() -> Result<()> {
                 yara_engine: yara_eng,
                 rules_dir,
                 base_dir,
+                config: Arc::clone(&config),
             };
 
             let rt = tokio::runtime::Runtime::new()?;
-            rt.block_on(ui::start_web_ui(state, port))?;
+            let server_state = state.clone();
+            let tray_config = Arc::clone(&config);
+
+            // Arka planda Axum Web UI sunucusunu Tokio runtime içinde başlat (Tray modunda sessiz çalışır, pencere açmaz)
+            rt.spawn(async move {
+                if let Err(e) = ui::start_web_ui(server_state, port, !is_tray_only).await {
+                    eprintln!("Web UI sunucu hatası: {}", e);
+                }
+            });
+
+            // Ana iş parçacığında yerel Windows Sistem Tepsisini (System Tray) çalıştır
+            #[cfg(windows)]
+            {
+                ui::run_system_tray(port, tray_config);
+            }
+            #[cfg(not(windows))]
+            {
+                rt.block_on(async {
+                    tokio::signal::ctrl_c().await.ok();
+                });
+            }
         }
 
         Commands::Service { action } => {
@@ -1231,10 +1431,421 @@ fn run_main() -> Result<()> {
                 }
             }
         }
+
+        Commands::CisaKev => {
+            print_banner();
+            println!("{}", "CISA BILINEN VE AKTIF ISTISMAR EDILEN ZAFIYETLER (CISA KEV CATALOG AUDIT):".cyan().bold());
+            println!("Referans Direktif: CISA Binding Operational Directive (BOD 22-01 / 26-04)\n");
+
+            match engines::CisaKevEngine::audit_system() {
+                Ok(rep) => {
+                    println!("Toplam KEV Kural Sayisi       : {}", rep.total_kev_rules.to_string().cyan().bold());
+                    println!("Kritik Zafiyet Sayisi         : {}", rep.critical_vulnerabilities.to_string().red().bold());
+                    println!("Fidye Yazilimi Iliskili Sayisi: {}\n", rep.ransomware_associated_count.to_string().yellow().bold());
+
+                    println!("{}", "AKTIF TAKIP EDILEN KRITIK UC NOKTA VE WINDOWS ZAFIYETLERI:".cyan().bold());
+                    println!("{:<16} {:<10} {:<34} {:<12} {}", "CVE ID", "Onem", "Urun", "Tarih", "Aciklama");
+                    println!("---------------------------------------------------------------------------------------------------------");
+                    for k in &rep.entries {
+                        let sev_colored = if k.severity == "Critical" { k.severity.red().bold() } else { k.severity.yellow() };
+                        let r_flag = if k.known_ransomware_campaign_use { "[RANSOMWARE]".red().bold() } else { "".normal() };
+                        println!("{:<16} {:<10} {:<34} {:<12} {} {}", k.cve_id.yellow().bold(), sev_colored, k.product, k.date_added, k.vulnerability_name, r_flag);
+                        println!("   -> Gerekli Eylem: {}", k.required_action.cyan());
+                    }
+
+                    if !rep.endpoint_warnings.is_empty() {
+                        println!("\n{}", "UC NOKTA SAVUNMA VE GUVENLIK UYARILARI:".magenta().bold());
+                        for w in &rep.endpoint_warnings {
+                            println!("   [!] {}", w.yellow());
+                        }
+                    }
+                    println!("\n{}", "[+] CISA KEV zafiyet ve uyumluluk denetimi tamamlandi.".green().bold());
+                }
+                Err(e) => {
+                    eprintln!("{}", format!("[-] CISA KEV denetim hatasi: {}", e).red());
+                }
+            }
+        }
+
+        Commands::RegisterShell { exe_path } => {
+            print_banner();
+            engines::WindowsShellManager::register_context_menu(exe_path.as_deref())?;
+        }
+
+        Commands::UnregisterShell => {
+            print_banner();
+            engines::WindowsShellManager::unregister_context_menu()?;
+        }
+
+        Commands::UpdateUsom => {
+            print_banner();
+            println!("{}", "USOM (SGB-TR) YERLI TEHDIT ISTIHBARATI SENKRONIZASYONU:".cyan().bold());
+            let usom_feed = feeds::UsomFeed::new(Arc::clone(&db));
+            match usom_feed.sync_usom(1000) {
+                Ok(stats) => {
+                    println!("{}", "[+] USOM verileri basariyla senkronize edildi:".green().bold());
+                    println!("    * Kaynak             : {}", stats.source.yellow().bold());
+                    println!("    * Toplam Islenen     : {}", stats.total_processed);
+                    println!("    * Veritabanina Eklenen: {}", stats.total_added.to_string().green().bold());
+                    println!("    * Zararli Domainler  : {}", stats.domain_count);
+                    println!("    * Zararli IP/C2      : {}", stats.ip_count);
+                    println!("    * Zararli URL'ler    : {}", stats.url_count);
+                }
+                Err(e) => {
+                    eprintln!("{}", format!("[-] USOM senkronizasyonu basarisiz: {}", e).red());
+                }
+            }
+        }
+
+        Commands::ScanStealers { kill } => {
+            print_banner();
+            println!("{}", "SHADOWSERVER STEALC & INFOSTEALER KIMLIK KORUMA TARAMASI:".cyan().bold());
+            println!("Hedef Depolar: Chrome/Edge Login Data, Cookies, Metamask/Phantom Cüzdanları, Telegram tdata\n");
+
+            let mut sys = sysinfo::System::new_all();
+            sys.refresh_all();
+            let report = engines::StealerHunter::scan_processes(&sys);
+
+            println!("Taranan Aktif Surec Sayisi   : {}", report.total_processes_scanned);
+            println!("Korunan Hassas Kasa Sayisi   : {}\n", report.vaults_protected_count);
+
+            if report.threats.is_empty() {
+                println!("{}", "[+] Harika: Tarayici kimlik depolarina veya cuzdanlara yonelik supheli bir infostealer sureci tespit edilmedi.".green().bold());
+            } else {
+                println!("{}", format!("[!] TEHLIKE: {} adet Infostealer / Kimlik Hirsizligi faaliyeti saptandi!", report.threats.len()).red().bold());
+                for t in &report.threats {
+                    println!("\n  -> PID: {} | Surec: {}", t.pid.to_string().cyan().bold(), t.process_name.red().bold());
+                    println!("     Hedef Kasa: {} ({})", t.target_asset.yellow().bold(), t.category.magenta());
+                    println!("     MITRE     : {}", t.mitre_technique.yellow());
+                    println!("     Aciklama  : {}", t.description);
+                    println!("     Komut     : {}", t.command_line.white());
+                    println!("     Tavsiye   : {}", t.recommendation.cyan());
+
+                    if kill {
+                        let _ = engines::ProcessScanner::kill_process_by_pid(t.pid);
+                        println!("{}", "     [+] DURUM: Zararli surec aninda sonlandirildi (Terminated).".green().bold());
+                    }
+                }
+            }
+        }
+
+        Commands::CisAudit => {
+            print_banner();
+            println!("{}", "CENTER FOR INTERNET SECURITY (CIS) CONTROLS V8.1 & HARDENING DENETIMI:".cyan().bold());
+            let report = engines::CisAuditEngine::run_audit();
+
+            println!("Toplam Denetlenen Kontrol : {}", report.total_checks);
+            println!("Gecen Guvenlik Ayarlari   : {}", report.passed_checks.to_string().green().bold());
+            println!("Eksik / Riskli Maddeler   : {}", report.failed_checks.to_string().red().bold());
+            println!("CIS Uyum Skoru            : %{:.1} [{}]", report.compliance_score, report.grade.cyan().bold());
+            println!("--------------------------------------------------------------------------------");
+
+            for check in &report.checks {
+                let status_badge = if check.passed { "[GECTI / OK]".green().bold() } else { "[RISK / EKSIK]".red().bold() };
+                println!("\n{} {} ({})", status_badge, check.title.yellow().bold(), check.cis_control.cyan());
+                println!("   Kategori      : {}", check.category);
+                println!("   Mevcut Deger  : {}", check.current_value);
+                println!("   Onerilen Deger: {}", check.recommended_value);
+                println!("   Aciklama      : {}", check.description);
+                if !check.passed {
+                    println!("   Iyilestirme   : {}", check.remediation.bright_magenta());
+                }
+            }
+        }
+
+        Commands::ScanSupplyChain { target } => {
+            print_banner();
+            println!("{}", "OPENSSF & OWASP A03 YAZILIM TEDARIK ZINCIRI VE BAGIMLILIK TARAMASI:".cyan().bold());
+            println!("Hedef Dizin: {:?}\n", target);
+
+            let report = engines::SupplyChainScanner::scan_directory(&target);
+            println!("Taranan Bagimlilik Dosyasi : {}", report.total_files_scanned);
+            println!("Riskli / Zararli Paket     : {}", if report.vulnerable_packages_count > 0 {
+                report.vulnerable_packages_count.to_string().red().bold()
+            } else {
+                "0 (Temiz)".green().bold()
+            });
+
+            if report.threats.is_empty() {
+                println!("\n{}", "[+] Harika: Projede zararlı lifecycle scripti veya bilinen kötücül bağımlılık bulunamadı.".green().bold());
+            } else {
+                println!("\n{}", format!("[!] KRITIK: {} adet tedarik zinciri tehdidi tespit edildi:", report.threats.len()).red().bold());
+                for t in &report.threats {
+                    println!("\n  -> Dosya    : {}", t.file_path.yellow().bold());
+                    println!("     Ekosistem: {} | Seviye: {}", t.package_ecosystem.cyan(), t.severity.red().bold());
+                    println!("     Tur      : {}", t.threat_type.magenta().bold());
+                    println!("     Gosterge : {}", t.indicator);
+                    println!("     Kod Kesiti: {}", t.snippet.white());
+                    println!("     MITRE    : {}", t.mitre_technique);
+                    println!("     Oneri    : {}", t.recommendation.bright_red());
+                }
+            }
+        }
+
+        Commands::EpssLookup { cve } => {
+            print_banner();
+            let report = engines::EpssEngine::lookup(&cve)?;
+            engines::EpssEngine::print_report(&report);
+        }
+
+        Commands::UpdateSans { limit } => {
+            print_banner();
+            println!("{}", "SANS ISC DShield bal küpü verileri ve saldırgan IP'leri senkronize ediliyor...".bold());
+            println!("------------------------------------------------------------");
+
+            let sans_feed = feeds::SansFeed::new(Arc::clone(&db));
+            let stats = sans_feed.sync_dshield(limit)?;
+            feeds::SansFeed::print_sync_report(&stats);
+        }
+
+        Commands::ScanSigma { kill } => {
+            print_banner();
+            println!("{}", "SigmaHQ açık kaynak tespit kuralları ile çalışan süreçler denetleniyor...".bold());
+            println!("------------------------------------------------------------");
+
+            let report = engines::SigmaEngine::scan_live_processes(kill)?;
+            engines::SigmaEngine::print_report(&report);
+        }
+
+        Commands::UpdateSpamhaus => {
+            print_banner();
+            println!("{}", "The Spamhaus Project DROP/eDROP kurşun geçirmez botnet ağları senkronize ediliyor...".bold());
+            println!("------------------------------------------------------------");
+
+            let spamhaus_feed = feeds::SpamhausFeed::new(Arc::clone(&db));
+            let stats = spamhaus_feed.sync_drop(500)?;
+            feeds::SpamhausFeed::print_sync_report(&stats);
+        }
+
+        Commands::UpdateUrlhaus { limit } => {
+            print_banner();
+            println!("{}", "Abuse.ch URLhaus veritabanından aktif zararlı indirme bağlantıları senkronize ediliyor...".bold());
+            println!("------------------------------------------------------------");
+
+            let urlhaus_feed = feeds::UrlhausFeed::new(Arc::clone(&db));
+            let stats = urlhaus_feed.sync_urlhaus(limit)?;
+            feeds::UrlhausFeed::print_sync_report(&stats);
+        }
+
+        Commands::LookupUrl { url } => {
+            print_banner();
+            println!("{}", "Abuse.ch URLhaus & Tehdit Veritabanı URL İtibar Sorgusu:".cyan().bold());
+            println!("Hedef Bağlantı: {}\n", url.yellow());
+
+            let urlhaus_feed = feeds::UrlhausFeed::new(Arc::clone(&db));
+            match urlhaus_feed.lookup(&url)? {
+                Some((threat, severity)) => {
+                    println!("{}", "[!] ZARARLI BAĞLANTI TESPİT EDİLDİ (MALICIOUS URL):".red().bold());
+                    println!("    * Tehdit Ailesi: {}", threat.bright_red().bold());
+                    println!("    * Önem Seviyesi: {}", severity.magenta().bold());
+                    println!("    * Kaynak       : Abuse.ch URLhaus & Project Guard C2/Malware Feed");
+                    println!("    * Tavsiye      : Bu bağlantıya yönelik web istekleri engellenmeli ve indirilmişse dosya karantinaya alınmalıdır.");
+                }
+                None => {
+                    println!("{}", "[+] GÜVENLİ / TEMİZ: Bu bağlantı URLhaus veya yerel zararlı listelerinde bulunamadı.".green().bold());
+                }
+            }
+        }
+
+        Commands::ScanStalkerware { kill } => {
+            print_banner();
+            println!("{}", "EFF Coalition Against Stalkerware & Citizen Lab yönergeleriyle süreçler denetleniyor...".bold());
+            println!("------------------------------------------------------------");
+
+            let mut sys = sysinfo::System::new_all();
+            sys.refresh_all();
+            let report = engines::StalkerwareHunter::scan_stalkerware(&sys, kill);
+            engines::StalkerwareHunter::print_report(&report);
+        }
+
+        Commands::PrivacyStatus => {
+            print_banner();
+            let report = engines::PrivacyGuard::audit_privacy();
+            engines::PrivacyGuard::print_report(&report);
+        }
+
+        Commands::PrivacyWatch { interval } => {
+            print_banner();
+            println!("{}", "DONANIM GİZLİLİK KORUMASI CANLI İZLEME MODU (PRIVACY WATCH):".cyan().bold());
+            println!("Kamera veya mikrofon açıldığında anlık masaüstü Toast bildirimi gönderilecektir.");
+            println!("Durdurmak için Ctrl+C tuşlarına basın. (Denetim Aralığı: {} saniye)\n", interval);
+
+            let mut seen_active: std::collections::HashSet<String> = std::collections::HashSet::new();
+
+            loop {
+                let report = engines::PrivacyGuard::audit_privacy();
+                for rec in &report.records {
+                    if rec.is_active {
+                        let key = format!("{}:{}", rec.device_type.as_str(), rec.process_name);
+                        if !seen_active.contains(&key) {
+                            seen_active.insert(key.clone());
+                            println!(
+                                "{} [{}] {} {} tarafından aktif olarak kullanılıyor!",
+                                "🚨".red(),
+                                chrono::Local::now().format("%H:%M:%S").to_string().yellow(),
+                                rec.device_type.as_str().bold().cyan(),
+                                rec.process_name.bold().red()
+                            );
+                            let is_cam = rec.device_type == engines::DeviceType::Webcam;
+                            engines::WindowsShellManager::send_privacy_toast(&rec.process_name, is_cam, rec.is_suspicious);
+                        }
+                    } else {
+                        let key = format!("{}:{}", rec.device_type.as_str(), rec.process_name);
+                        if seen_active.contains(&key) {
+                            seen_active.remove(&key);
+                            println!(
+                                "{} [{}] {} erişimi sonlandı: {}",
+                                "ℹ️".green(),
+                                chrono::Local::now().format("%H:%M:%S").to_string().cyan(),
+                                rec.device_type.as_str(),
+                                rec.process_name
+                            );
+                        }
+                    }
+                }
+                std::thread::sleep(std::time::Duration::from_secs(interval.max(1)));
+            }
+        }
+
+        Commands::Mode { action } => {
+            print_banner();
+            let mode_action = action.unwrap_or(ModeCommands::Status);
+            match mode_action {
+                ModeCommands::Status => {
+                    engines::SystemModeEngine::print_status();
+                }
+                ModeCommands::Game => {
+                    println!("{}", "OYUN MODU (ULTRA DÜŞÜK GECİKME & MAKSİMUM FPS) ETKİNLEŞTİRİLİYOR:".cyan().bold());
+                    match engines::SystemModeEngine::apply_game_mode() {
+                        Ok(actions) => {
+                            for act in actions {
+                                println!("  {} {}", "✔".green().bold(), act.white());
+                            }
+                            println!("\n{}", "[+] Harika: Oyun modu basariyla devreye alindi. Iyi eglenceler!".green().bold());
+                            engines::WindowsShellManager::send_mode_toast("Oyun Modu Aktif", "Arka plan gecikmeleri sıfırlandı ve ağ/GPU önceliği atandı.");
+                        }
+                        Err(e) => {
+                            eprintln!("{}", format!("[-] Oyun modu etkinlestirme hatasi: {}", e).red());
+                        }
+                    }
+                }
+                ModeCommands::Work => {
+                    println!("{}", "İŞ VE GİZLİLİK MODU (WINDEBLOAT & ODAKLANMA) ETKİNLEŞTİRİLİYOR:".cyan().bold());
+                    match engines::SystemModeEngine::apply_work_mode() {
+                        Ok(actions) => {
+                            for act in actions {
+                                println!("  {} {}", "✔".green().bold(), act.white());
+                            }
+                            println!("\n{}", "[+] Harika: Is ve gizlilik modu devrede. Telemetri engellendi ve odaklanma saglandi.".green().bold());
+                            engines::WindowsShellManager::send_mode_toast("İş & Gizlilik Modu Aktif", "WinDebloat telemetri temizliği yapıldı ve EDR koruması yükseltildi.");
+                        }
+                        Err(e) => {
+                            eprintln!("{}", format!("[-] Is modu etkinlestirme hatasi: {}", e).red());
+                        }
+                    }
+                }
+                ModeCommands::Restore => {
+                    println!("{}", "SİSTEM AYARLARI ORİJİNAL WINDOWS VARSAYILANLARINA GERİ YÜKLENİYOR:".cyan().bold());
+                    match engines::SystemModeEngine::restore_defaults() {
+                        Ok(actions) => {
+                            for act in actions {
+                                println!("  {} {}", "✔".green().bold(), act.white());
+                            }
+                            println!("\n{}", "[+] Orijinal sistem ayarlari ve servisleri basariyla geri yuklendi.".green().bold());
+                            engines::WindowsShellManager::send_mode_toast("Sistem Sıfırlandı", "Tüm kayıt defteri ayarları orijinal fabrika ayarlarına döndürüldü.");
+                        }
+                        Err(e) => {
+                            eprintln!("{}", format!("[-] Geri yukleme hatasi: {}", e).red());
+                        }
+                    }
+                }
+            }
+        }
+
+        Commands::Notify { title, message } => {
+            print_banner();
+            println!("{}", "Windows Bildirim Merkezine Toast Bildirimi Gönderiliyor...".cyan());
+            println!("  • Başlık: {}", title.yellow().bold());
+            println!("  • Mesaj : {}", message.white());
+            engines::WindowsShellManager::send_native_toast(&title, &message);
+            println!("{}", "[+] Bildirim basariyla gonderildi.".green().bold());
+        }
+
+        Commands::Config { action } => {
+            attach_console_for_cli();
+            print_banner();
+            let mut cfg = config::GuardConfig::load();
+            let act = action.unwrap_or(ConfigCommands::Show);
+            match act {
+                ConfigCommands::Show => {
+                    println!("{}", "PROJECT GUARD MERKEZI YAPILANDIRMA".cyan().bold());
+                    println!("Dosya Yolu: {:?}\n", config::GuardConfig::config_file_path());
+                    let json = serde_json::to_string_pretty(&cfg)?;
+                    println!("{}", json);
+                }
+                ConfigCommands::Get { key } => {
+                    match cfg.get_value_by_key(&key) {
+                        Some(val) => println!("{}: {}", key.cyan().bold(), val.green()),
+                        None => eprintln!("{}", format!("[-] Ayar anahtarı bulunamadı: {}", key).red()),
+                    }
+                }
+                ConfigCommands::Set { key, value } => {
+                    match cfg.set_value_by_key(&key, &value) {
+                        Ok(()) => println!("{}", format!("[+] Ayar başarıyla güncellendi: {} = {}", key, value).green().bold()),
+                        Err(e) => eprintln!("{}", format!("[-] Ayar güncellenemedi: {}", e).red()),
+                    }
+                }
+                ConfigCommands::Reset => {
+                    match config::GuardConfig::reset() {
+                        Ok(_) => println!("{}", "[+] Tüm ayarlar başarıyla fabrika varsayılanlarına sıfırlandı.".green().bold()),
+                        Err(e) => eprintln!("{}", format!("[-] Ayarlar sıfırlanamadı: {}", e).red()),
+                    }
+                }
+                ConfigCommands::Export { path } => {
+                    let out_path = path.unwrap_or_else(|| PathBuf::from("guard_config_backup.json"));
+                    let json = serde_json::to_string_pretty(&cfg)?;
+                    fs::write(&out_path, json)?;
+                    println!("{}", format!("[+] Yapılandırma başarıyla dışa aktarıldı: {:?}", out_path).green().bold());
+                }
+                ConfigCommands::Import { path } => {
+                    let content = fs::read_to_string(&path)?;
+                    let imported: config::GuardConfig = serde_json::from_str(&content)?;
+                    imported.save()?;
+                    println!("{}", format!("[+] Yapılandırma başarıyla içe aktarıldı ve uygulandı: {:?}", path).green().bold());
+                }
+            }
+        }
+
+        Commands::PackageExtension => {
+            print_banner();
+            println!("{}", "PROJECT GUARD CHROME WEB SHIELD EKLENTİSİ PAKETLENİYOR:".cyan().bold());
+            match ui::server::get_or_create_extension_zip() {
+                Ok(bytes) => {
+                    let sha = sha2::Sha256::digest(&bytes)
+                        .iter()
+                        .map(|b| format!("{:02x}", b))
+                        .collect::<String>();
+                    println!("  -> Paket Durumu  : {}", "BAŞARILI [OK]".green().bold());
+                    println!("  -> Dosya Boyutu  : {:.2} KB ({} bayt)", bytes.len() as f64 / 1024.0, bytes.len());
+                    println!("  -> SHA-256       : {}", sha.yellow().bold());
+                    println!("  -> Çıktı Konumu  : {}", "dist/project-guard-web-shield.zip".cyan().bold());
+                    println!("\n{}", "Chrome Tarayıcısına Yükleme Adımları:".magenta().bold());
+                    println!("  1. 'chrome://extensions/' sayfasını açın.");
+                    println!("  2. Sağ üstten 'Geliştirici modu'nu aktif edin.");
+                    println!("  3. 'Paketlenmemiş öğe yükle' ile 'extensions\\chrome' klasörünü seçin.");
+                    println!("  4. Veya .zip arşivini bir dizine çıkarıp yükleyin.");
+                }
+                Err(e) => {
+                    println!("{}", format!("[!] Paketleme hatası: {}", e).red().bold());
+                }
+            }
+        }
     }
 
     Ok(())
 }
+
+
 
 fn print_scan_summary(summary: &ScanSummary) {
     println!("\n{}", "==================== TARAMA RAPORU ====================".cyan().bold());

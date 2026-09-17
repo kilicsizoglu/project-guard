@@ -8,10 +8,16 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 
+fn default_decoy_type() -> String {
+    "Ransomware Canary / Lure".to_string()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CanaryFileRecord {
     pub path: String,
     pub filename: String,
+    #[serde(default = "default_decoy_type")]
+    pub decoy_type: String,
     pub initial_sha256: String,
     pub deployed_at: String,
 }
@@ -28,6 +34,7 @@ pub struct CanaryStatus {
 pub struct CanaryFileStatus {
     pub path: String,
     pub filename: String,
+    pub decoy_type: String,
     pub status: String, // "Guvenli", "Modifiye Edildi (Saldiri)", "Silindi"
     pub is_compromised: bool,
 }
@@ -55,24 +62,53 @@ impl CanaryManager {
         s
     }
 
-    /// Belirtilen dizine stratejik yem (canary/decoy) tuzak dosyaları yerleştirir
+    /// CISA (Cybersecurity and Infrastructure Security Agency) 16 Eylül 2026 "Using Cyber Decoys" doktrinine
+    /// uygun olarak hem dosya tuzakları hem de Honeytoken kimlik/erişim belirteçleri yerleştirir.
     pub fn deploy_canaries(&self, target_dir: &Path) -> Result<Vec<CanaryFileRecord>> {
         if !target_dir.exists() {
             fs::create_dir_all(target_dir)?;
         }
 
-        let decoys: [(&str, &[u8]); 3] = [
+        let decoys: [(&str, &[u8], &str); 8] = [
             (
                 "!00_financial_records_confidential.docx",
                 b"CONFIDENTIAL CORPORATE BALANCE SHEET 2026 - DO NOT MODIFY OR SHARE.",
+                "Ransomware Canary / Document Lure",
             ),
             (
                 "!00_passwords_vault_backup.xlsx",
                 b"MASTER CREDENTIAL BACKUP DATABASE ENCRYPTED CONTAINER 2026.",
+                "Ransomware Canary / Document Lure",
             ),
             (
                 "!00_accounting_ledger_tax_audit.pdf",
                 b"%PDF-1.4 %CANARY-TRAP-FILE-FOR-PROJECT-GUARD-RANSOMWARE-DETECTION",
+                "Ransomware Canary / Document Lure",
+            ),
+            (
+                "!00_aws_cloud_credentials.env",
+                b"[default]\naws_access_key_id = AKIAIOSFODNN7EXAMPLE\naws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n# CISA HONEYTOKEN DECOY - PROJECT GUARD SURVEILLANCE",
+                "CISA Honeytoken / Cloud Credentials",
+            ),
+            (
+                "!00_corporate_master_vault.kdbx",
+                b"\x03\xd9\xa2\x9a\x02\x00\x01\x00KDBX-CANARY-HONEYTOKEN-TRAP-PROJECT-GUARD-SECURITY",
+                "CISA Honeytoken / Password Vault Container",
+            ),
+            (
+                "!00_production_db_connection.config",
+                b"Server=prod-sql-cluster.corp.internal;Database=EnterpriseCore;User Id=sa_canary;Password=DecoySecretTrapKey2026!;",
+                "CISA Honeytoken / Database Secrets",
+            ),
+            (
+                "!00_github_deploy_tokens.env",
+                b"GITHUB_TOKEN=ghp_CanaryDecoyTrapTokenForProjectGuard2026\nGITHUB_ORG=CorpInternalOps\n# CISA HONEYTOKEN - TRIPWIRE SURVEILLANCE",
+                "CISA Honeytoken / GitHub Access Token",
+            ),
+            (
+                "!00_azure_service_principal.json",
+                b"{\n  \"clientId\": \"c15a-canary-0000-0000-000000000000\",\n  \"clientSecret\": \"DecoySecretTrapValue~ProjectGuard2026\",\n  \"tenantId\": \"tenant-honeytoken-guard\"\n}",
+                "CISA Honeytoken / Azure Service Principal",
             ),
         ];
 
@@ -80,7 +116,7 @@ impl CanaryManager {
         let mut existing = self.load_records()?;
         let mut newly_deployed = Vec::new();
 
-        for (filename, content) in decoys {
+        for (filename, content, decoy_type) in decoys {
             let file_path = target_dir.join(filename);
             fs::write(&file_path, content)
                 .with_context(|| format!("Yem dosyasi yazilamadi: {:?}", file_path))?;
@@ -91,6 +127,7 @@ impl CanaryManager {
             let record = CanaryFileRecord {
                 path: path_str.clone(),
                 filename: filename.to_string(),
+                decoy_type: decoy_type.to_string(),
                 initial_sha256: sha256,
                 deployed_at: now.clone(),
             };
@@ -103,7 +140,19 @@ impl CanaryManager {
         Ok(newly_deployed)
     }
 
-    /// Mevcut tüm yem dosyalarının bütünlüğünü denetler
+    /// CISA Breadcrumbs (Ekmek Kırıntıları) mimarisi gereği sistemdeki genel dizinlere (C:\Users\Public vb.) tuzaklar serper
+    pub fn deploy_breadcrumbs(&self) -> Result<Vec<CanaryFileRecord>> {
+        let mut deployed = Vec::new();
+        let public_docs = PathBuf::from(r"C:\Users\Public\Documents");
+        if public_docs.exists() {
+            if let Ok(mut recs) = self.deploy_canaries(&public_docs) {
+                deployed.append(&mut recs);
+            }
+        }
+        Ok(deployed)
+    }
+
+    /// Mevcut tüm yem dosyalarının ve Honeytoken'ların bütünlüğünü denetler
     pub fn check_status(&self) -> Result<CanaryStatus> {
         let records = self.load_records()?;
         let mut files = Vec::new();
@@ -117,7 +166,8 @@ impl CanaryManager {
                 files.push(CanaryFileStatus {
                     path: rec.path.clone(),
                     filename: rec.filename.clone(),
-                    status: "Silindi (Supheli Fidye Saldirisi!)".to_string(),
+                    decoy_type: rec.decoy_type.clone(),
+                    status: "Silindi (Supheli Fidye / Veri Silme Saldirisi!)".to_string(),
                     is_compromised: true,
                 });
             } else {
@@ -129,7 +179,8 @@ impl CanaryManager {
                             files.push(CanaryFileStatus {
                                 path: rec.path.clone(),
                                 filename: rec.filename.clone(),
-                                status: "Sifrelendi / Degistirildi (Fidye Yazilimi Tespiti!)".to_string(),
+                                decoy_type: rec.decoy_type.clone(),
+                                status: "Sifrelendi / Degistirildi (Fidye Yazilimi / Honeytoken Erisimi!)".to_string(),
                                 is_compromised: true,
                             });
                         } else {
@@ -137,6 +188,7 @@ impl CanaryManager {
                             files.push(CanaryFileStatus {
                                 path: rec.path.clone(),
                                 filename: rec.filename.clone(),
+                                decoy_type: rec.decoy_type.clone(),
                                 status: "Guvenli (Bozulmadi)".to_string(),
                                 is_compromised: false,
                             });
@@ -147,7 +199,8 @@ impl CanaryManager {
                         files.push(CanaryFileStatus {
                             path: rec.path.clone(),
                             filename: rec.filename.clone(),
-                            status: "Erisim Engellendi (Kilitli)".to_string(),
+                            decoy_type: rec.decoy_type.clone(),
+                            status: "Erisim Engellendi (Kilitli / Sifreleniyor)".to_string(),
                             is_compromised: true,
                         });
                     }
@@ -180,13 +233,13 @@ impl CanaryManager {
         println!(
             "{}",
             format!(
-                "[+] FIDYE YAZILIMI KAPANI (CANARY TRAP) DEVREDE! Izlenen Dizin: {:?}",
+                "[+] FIDYE YAZILIMI VE CISA HONEYTOKEN TUZAKLARI DEVREDE! Izlenen Dizin: {:?}",
                 watch_dir
             )
             .red()
             .bold()
         );
-        println!("{}", "[*] Yem dosyalarina yapilacak sifreleme veya silme aninda yakalanacaktir.\n".yellow());
+        println!("{}", "[*] Yem dosyalarina yapilacak sifreleme, silme veya bal belirteci erisimi aninda yakalanacaktir.\n".yellow());
 
         for event in rx {
             match event.kind {
@@ -196,16 +249,16 @@ impl CanaryManager {
                         if filename.starts_with("!00_") {
                             println!(
                                 "\n{}",
-                                "!!!!!!!!!!!!!!!!!!! [ RANSOMWARE SALDIRI TESPITI ] !!!!!!!!!!!!!!!!!!!"
+                                "!!!!!!!!!!!!!!!!!!! [ CISA CYBER DECOY / RANSOMWARE SALDIRI TESPITI ] !!!!!!!!!!!!!!!!!!!"
                                     .red()
                                     .bold()
                             );
-                            println!("Yem Dosyasi Kurcalandi: {}", path.display().to_string().yellow().bold());
+                            println!("Tuzak / Honeytoken Kurcalandi: {}", path.display().to_string().yellow().bold());
                             println!("Olay Turu: {:?}", event.kind);
-                            println!("ACIL UYARI: Sistemdeki bir surec dosyalari sifrelemeye veya silmeye basladi!");
+                            println!("ACIL UYARI: Sistemdeki bir surec dosyalari sifrelemeye, silmeye veya Honeytoken calmaya basladi!");
                             println!(
                                 "{}\n",
-                                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                                     .red()
                                     .bold()
                             );
@@ -235,5 +288,59 @@ impl CanaryManager {
         let json = serde_json::to_string_pretty(map)?;
         fs::write(&self.state_file, json)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_canary_deployment_and_cisa_honeytokens() {
+        let unique_id = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let tmp = std::env::temp_dir().join(format!("guard_canary_test_{}", unique_id));
+        let _ = fs::create_dir_all(&tmp);
+
+        let mgr = CanaryManager::new(&tmp);
+
+        let target_dir = tmp.join("traps");
+        let deployed = mgr.deploy_canaries(&target_dir).unwrap();
+
+        assert_eq!(deployed.len(), 8);
+        assert!(deployed.iter().any(|d| d.filename.contains("aws_cloud_credentials")));
+        assert!(deployed.iter().any(|d| d.filename.contains("corporate_master_vault")));
+        assert!(deployed.iter().any(|d| d.filename.contains("financial_records")));
+        assert!(deployed.iter().any(|d| d.filename.contains("github_deploy_tokens")));
+        assert!(deployed.iter().any(|d| d.filename.contains("azure_service_principal")));
+
+        // İlk denetimde hepsi sağlam olmalı
+        let status = mgr.check_status().unwrap();
+        assert_eq!(status.total_deployed, 8);
+        assert_eq!(status.intact_count, 8);
+        assert_eq!(status.compromised_count, 0);
+
+        // Bir dosyayı tahrif et (şifrelenmiş gibi yap)
+        let aws_file = target_dir.join("!00_aws_cloud_credentials.env");
+        fs::write(&aws_file, b"ENCRYPTED BY RANSOMWARE GANG").unwrap();
+
+        let status2 = mgr.check_status().unwrap();
+        assert_eq!(status2.intact_count, 7);
+        assert_eq!(status2.compromised_count, 1);
+        let tampered = status2.files.iter().find(|f| f.is_compromised).unwrap();
+        assert!(tampered.status.contains("Sifrelendi"));
+
+        // Bir dosyayı sil (saldırganın iz silmesi gibi)
+        let doc_file = target_dir.join("!00_financial_records_confidential.docx");
+        fs::remove_file(&doc_file).unwrap();
+
+        let status3 = mgr.check_status().unwrap();
+        assert_eq!(status3.intact_count, 6);
+        assert_eq!(status3.compromised_count, 2);
+
+        // Temizlik
+        let _ = fs::remove_dir_all(&tmp);
     }
 }

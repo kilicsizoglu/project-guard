@@ -77,8 +77,17 @@ try {
     Write-Warning "Hizmet silinirken hata: $_"
 }
 
-# 4. Remove Shortcuts
-Write-Host "[3/5] Masaustu ve Baslat Menusu kisayollari temizleniyor..." -ForegroundColor Cyan
+# 4. Remove Shortcuts and Context Menu
+Write-Host "[3/6] Explorer Sag Tik Menusu ve Kisayollar temizleniyor..." -ForegroundColor Cyan
+try {
+    $installedExe = Join-Path $InstallDir "project-guard.exe"
+    if (Test-Path $installedExe) {
+        & "$installedExe" unregister-shell 2>$null | Out-Null
+    }
+} catch {
+    Write-Warning "Sag tik menusu temizlenirken hata: $_"
+}
+
 try {
     $desktopPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonDesktopDirectory)
     $desktopShortcut = Join-Path $desktopPath "Project Guard.lnk"

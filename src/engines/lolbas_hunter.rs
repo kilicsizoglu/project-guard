@@ -203,7 +203,15 @@ impl LolbasHunter {
                 ));
             }
         } else if name_lower.contains("wmic.exe") {
-            if cmd_lower.contains("process call create") {
+            if cmd_lower.contains("shadowcopy") && cmd_lower.contains("delete") {
+                return Some((
+                    "Gölge Kopyaları Silme (Fidye Yazılımı Kurtarma Engelleme)".to_string(),
+                    "T1490".to_string(),
+                    "Critical".to_string(),
+                    "wmic.exe".to_string(),
+                    "wmic.exe ile sistem gölge kopyaları (VSS) silinerek sistem geri yükleme imkansız hale getiriliyor!".to_string(),
+                ));
+            } else if cmd_lower.contains("process call create") {
                 return Some((
                     "WMIC ile Süreç Başlatma".to_string(),
                     "T1047".to_string(),
@@ -223,13 +231,36 @@ impl LolbasHunter {
                 ));
             }
         } else if name_lower.contains("powershell.exe") || name_lower.contains("pwsh.exe") {
-            if (cmd_lower.contains("-enc ") || cmd_lower.contains("-encodedcommand ") || cmd_lower.contains(" -e ")) && (cmd_lower.contains("hidden") || cmd_lower.contains("bypass") || cmd_lower.contains("downloadstring") || cmd_lower.contains("iex")) {
+            if (cmd_lower.contains("set-mppreference") && (cmd_lower.contains("disablerealtimemonitoring") || cmd_lower.contains("disablescriptscanning")))
+                || (cmd_lower.contains("add-mppreference") && cmd_lower.contains("exclusion"))
+            {
+                return Some((
+                    "PowerShell ile Windows Defender Körleştirme (Tampering)".to_string(),
+                    "T1562.001".to_string(),
+                    "Critical".to_string(),
+                    name.to_string(),
+                    "PowerShell komutu ile Windows Defender gerçek zamanlı koruması veya istisna listeleri manipüle ediliyor!".to_string(),
+                ));
+            } else if (cmd_lower.contains("-enc ") || cmd_lower.contains("-encodedcommand ") || cmd_lower.contains(" -e ")) && (cmd_lower.contains("hidden") || cmd_lower.contains("bypass") || cmd_lower.contains("downloadstring") || cmd_lower.contains("iex")) {
                 return Some((
                     "Gizlenmiş / Base64 Şifreli PowerShell".to_string(),
                     "T1059.001".to_string(),
                     "High".to_string(),
                     name.to_string(),
                     "PowerShell gizli pencerede Base64 kodlu komut ve web downloadstring/iex çalıştırıyor.".to_string(),
+                ));
+            } else if cmd_lower.contains("add-localgroupmember")
+                && (cmd_lower.contains("administrators")
+                    || cmd_lower.contains("yöneticiler")
+                    || cmd_lower.contains("yoneticiler")
+                    || cmd_lower.contains("remote desktop users"))
+            {
+                return Some((
+                    "PowerShell ile Yönetici Grubu Manipülasyonu".to_string(),
+                    "T1098.007".to_string(),
+                    "Critical".to_string(),
+                    name.to_string(),
+                    "PowerShell Add-LocalGroupMember ile kullanıcı Administrators veya Remote Desktop Users grubuna atanıyor (MITRE ATT&CK v16 T1098.007)!".to_string(),
                 ));
             }
         } else if name_lower.contains("curl.exe") {
@@ -268,11 +299,162 @@ impl LolbasHunter {
                 "msiexec.exe".to_string(),
                 "msiexec.exe uzaktaki web sunucusundan doğrudan MSI paketi yüklemeye çalışıyor.".to_string(),
             ));
+        } else if name_lower.contains("vssadmin.exe") {
+            if cmd_lower.contains("delete") && cmd_lower.contains("shadows") {
+                return Some((
+                    "VSSAdmin ile Gölge Kopyaları Silme (Fidye Yazılımı)".to_string(),
+                    "T1490".to_string(),
+                    "Critical".to_string(),
+                    "vssadmin.exe".to_string(),
+                    "vssadmin.exe kullanılarak tüm gölge kopyalar (shadow copies) silinmeye çalışılıyor. Fidye yazılımı hazırlığı!".to_string(),
+                ));
+            }
+        } else if name_lower.contains("wbadmin.exe") {
+            if cmd_lower.contains("delete") && (cmd_lower.contains("catalog") || cmd_lower.contains("systemstatebackup")) {
+                return Some((
+                    "WBAdmin ile Sistem Yedek Kataloğu İmhası".to_string(),
+                    "T1490".to_string(),
+                    "Critical".to_string(),
+                    "wbadmin.exe".to_string(),
+                    "wbadmin.exe ile Windows yedekleme kataloğu silinerek veri kurtarma engelleniyor.".to_string(),
+                ));
+            }
+        } else if name_lower.contains("bcdedit.exe") {
+            if (cmd_lower.contains("recoveryenabled") && cmd_lower.contains("no"))
+                || (cmd_lower.contains("bootstatuspolicy") && cmd_lower.contains("ignoreallfailures"))
+                || (cmd_lower.contains("safeboot") && cmd_lower.contains("minimal"))
+            {
+                return Some((
+                    "BCD Geri Yükleme ve Önyükleme Sabotajı (Fidye & EDR Atlatma)".to_string(),
+                    "T1490".to_string(),
+                    "Critical".to_string(),
+                    "bcdedit.exe".to_string(),
+                    "bcdedit.exe ile otomatik onarım engelleniyor veya sistem EDR'ı atlatmak için Güvenli Mod'a zorlanıyor!".to_string(),
+                ));
+            }
+        } else if name_lower.contains("fltmc.exe") {
+            if cmd_lower.contains("unload") {
+                return Some((
+                    "Antivirüs Dosya Sistemi Minifiltresi Boşaltma (EDR-Kill)".to_string(),
+                    "T1562.001".to_string(),
+                    "Critical".to_string(),
+                    "fltmc.exe".to_string(),
+                    "fltmc.exe unload komutu ile antivirüs/EDR gerçek zamanlı dosya izleme filtresi çekirdekten kaldırılmaya çalışılıyor!".to_string(),
+                ));
+            }
+        } else if name_lower.contains("wevtutil.exe") {
+            if (cmd_lower.contains("cl ") || cmd_lower.contains("clear-log"))
+                && (cmd_lower.contains("security")
+                    || cmd_lower.contains("system")
+                    || cmd_lower.contains("application")
+                    || cmd_lower.contains("powershell"))
+            {
+                return Some((
+                    "Windows Olay Günlüğü Temizleme (İz Silme)".to_string(),
+                    "T1070.001".to_string(),
+                    "High".to_string(),
+                    "wevtutil.exe".to_string(),
+                    "wevtutil.exe ile kritik güvenlik veya sistem olay günlükleri silinerek adli bilişim izleri yok ediliyor.".to_string(),
+                ));
+            }
+        } else if name_lower.contains("sc.exe") {
+            if cmd_lower.contains("create")
+                && (cmd_lower.contains("type= kernel") || cmd_lower.contains("type=kernel") || cmd_lower.contains(".sys"))
+            {
+                return Some((
+                    "Zafiyetli Çekirdek Sürücüsü Servis Kaydı (BYOVD)".to_string(),
+                    "T1068".to_string(),
+                    "Critical".to_string(),
+                    "sc.exe".to_string(),
+                    "sc.exe ile sisteme çekirdek seviyesinde zafiyetli sürücü servisi kaydedilmeye çalışılıyor (BYOVD saldırısı)!".to_string(),
+                ));
+            } else if (cmd_lower.contains("stop") || (cmd_lower.contains("config") && cmd_lower.contains("disabled")))
+                && (cmd_lower.contains("windefend")
+                    || cmd_lower.contains("projectguard")
+                    || cmd_lower.contains("sense")
+                    || cmd_lower.contains("wuauserv")
+                    || cmd_lower.contains("msmpeng"))
+            {
+                return Some((
+                    "Güvenlik Servisi Durdurma / Devre Dışı Bırakma".to_string(),
+                    "T1562.001".to_string(),
+                    "Critical".to_string(),
+                    "sc.exe".to_string(),
+                    "sc.exe kullanılarak antivirüs veya güvenlik servisi durdurulmaya ya da başlangıç tipi devre dışına alınmaya çalışılıyor!".to_string(),
+                ));
+            }
+        } else if name_lower.contains("net.exe") || name_lower.contains("net1.exe") {
+            if cmd_lower.contains("stop")
+                && (cmd_lower.contains("windefend")
+                    || cmd_lower.contains("projectguard")
+                    || cmd_lower.contains("sense")
+                    || cmd_lower.contains("mssql")
+                    || cmd_lower.contains("mysql")
+                    || cmd_lower.contains("exchange"))
+            {
+                return Some((
+                    "Kritik Güvenlik / Veritabanı Servisi Durdurma".to_string(),
+                    "T1562.001".to_string(),
+                    "Critical".to_string(),
+                    name.to_string(),
+                    "net stop ile güvenlik yazılımları veya kurumsal veritabanı servisleri şifreleme/sabotaj öncesi kapatılmaya çalışılıyor!".to_string(),
+                ));
+            }
+
+            if cmd_lower.contains("localgroup")
+                && (cmd_lower.contains("administrators")
+                    || cmd_lower.contains("yöneticiler")
+                    || cmd_lower.contains("yoneticiler")
+                    || cmd_lower.contains("remote desktop users")
+                    || cmd_lower.contains("backup operators"))
+                && cmd_lower.contains("/add")
+            {
+                return Some((
+                    "Yetkisiz Yönetici / Yerel Grup Manipülasyonu".to_string(),
+                    "T1098.007".to_string(),
+                    "Critical".to_string(),
+                    name.to_string(),
+                    "net localgroup komutu ile yetkisiz bir kullanıcı Administrators veya Remote Desktop Users grubuna eklenerek yetki yükseltme ve kalıcılık sağlanıyor (MITRE ATT&CK v16 T1098.007)!".to_string(),
+                ));
+            }
+        } else if name_lower.contains("ntdsutil.exe") {
+            if (cmd_lower.contains("ac i ntds") || cmd_lower.contains("activate instance ntds") || cmd_lower.contains("ntds"))
+                && (cmd_lower.contains("ifm") || cmd_lower.contains("create full") || cmd_lower.contains("create rodc"))
+            {
+                return Some((
+                    "Active Directory Veritabanı ve NTDS Dökümü (Kimlik Hırsızlığı)".to_string(),
+                    "T1003.003".to_string(),
+                    "Critical".to_string(),
+                    "ntdsutil.exe".to_string(),
+                    "ntdsutil.exe IFM (Install From Media) komutları ile ntds.dit Active Directory veritabanı dökümü alınarak tüm domain parola özetleri çalınmaya çalışılıyor (CISA/NSA LOTL Tehdidi)!".to_string(),
+                ));
+            }
+        } else if name_lower.contains("netsh.exe") {
+            if cmd_lower.contains("portproxy") && (cmd_lower.contains("add") || cmd_lower.contains("set")) && cmd_lower.contains("v4tov4") {
+                return Some((
+                    "Netsh ile Gizli Port Yönlendirme ve C2 Tünelleme".to_string(),
+                    "T1090.001".to_string(),
+                    "High".to_string(),
+                    "netsh.exe".to_string(),
+                    "netsh portproxy ile uç nokta üzerinden gizli C2 tüneli veya dahili ağ pivot köprüsü kurulmaya çalışılıyor (CISA/NSA LOTL Uyarısı)!".to_string(),
+                ));
+            }
+        } else if name_lower.contains("nltest.exe") {
+            if cmd_lower.contains("/dclist:") || cmd_lower.contains("/domain_trusts") || cmd_lower.contains("/trusted_domains") {
+                return Some((
+                    "Etki Alanı Güven İlişkileri Keşfi (Domain Trust Discovery)".to_string(),
+                    "T1482".to_string(),
+                    "High".to_string(),
+                    "nltest.exe".to_string(),
+                    "nltest.exe ile etki alanı denetleyicileri ve domain güven ilişkileri taranıyor (CISA LOTL Keşif Saldırısı).".to_string(),
+                ));
+            }
         }
 
         None
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -357,4 +539,198 @@ mod tests {
         );
         assert!(res.is_none());
     }
+
+    #[test]
+    fn test_vssadmin_shadow_copy_deletion() {
+        let res = LolbasHunter::inspect_process(
+            "vssadmin.exe",
+            "cmd.exe",
+            "vssadmin.exe delete shadows /all /quiet",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "VSSAdmin ile Gölge Kopyaları Silme (Fidye Yazılımı)");
+        assert_eq!(mitre, "T1490");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_wmic_shadow_copy_deletion() {
+        let res = LolbasHunter::inspect_process(
+            "wmic.exe",
+            "cmd.exe",
+            "wmic.exe shadowcopy delete /nointeractive",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Gölge Kopyaları Silme (Fidye Yazılımı Kurtarma Engelleme)");
+        assert_eq!(mitre, "T1490");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_bcdedit_recovery_tampering() {
+        let res = LolbasHunter::inspect_process(
+            "bcdedit.exe",
+            "powershell.exe",
+            "bcdedit.exe /set {default} recoveryenabled No",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "BCD Geri Yükleme ve Önyükleme Sabotajı (Fidye & EDR Atlatma)");
+        assert_eq!(mitre, "T1490");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_fltmc_minifilter_unload() {
+        let res = LolbasHunter::inspect_process(
+            "fltmc.exe",
+            "cmd.exe",
+            "fltmc.exe unload WdFilter",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Antivirüs Dosya Sistemi Minifiltresi Boşaltma (EDR-Kill)");
+        assert_eq!(mitre, "T1562.001");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_wevtutil_log_clearing() {
+        let res = LolbasHunter::inspect_process(
+            "wevtutil.exe",
+            "cmd.exe",
+            "wevtutil.exe cl Security",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Windows Olay Günlüğü Temizleme (İz Silme)");
+        assert_eq!(mitre, "T1070.001");
+        assert_eq!(sev, "High");
+    }
+
+    #[test]
+    fn test_powershell_defender_tampering() {
+        let res = LolbasHunter::inspect_process(
+            "powershell.exe",
+            "cmd.exe",
+            "powershell.exe -Command Set-MpPreference -DisableRealtimeMonitoring $true",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "PowerShell ile Windows Defender Körleştirme (Tampering)");
+        assert_eq!(mitre, "T1562.001");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_sc_service_tampering() {
+        let res = LolbasHunter::inspect_process(
+            "sc.exe",
+            "cmd.exe",
+            "sc.exe config WinDefend start=disabled",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Güvenlik Servisi Durdurma / Devre Dışı Bırakma");
+        assert_eq!(mitre, "T1562.001");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_net_stop_security_service() {
+        let res = LolbasHunter::inspect_process(
+            "net.exe",
+            "cmd.exe",
+            "net.exe stop WinDefend",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Kritik Güvenlik / Veritabanı Servisi Durdurma");
+        assert_eq!(mitre, "T1562.001");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_mitre_t1098_account_manipulation() {
+        let res = LolbasHunter::inspect_process(
+            "net.exe",
+            "cmd.exe",
+            "net.exe localgroup administrators backdoor_user /add",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Yetkisiz Yönetici / Yerel Grup Manipülasyonu");
+        assert_eq!(mitre, "T1098.007");
+        assert_eq!(sev, "Critical");
+
+        let res_ps = LolbasHunter::inspect_process(
+            "powershell.exe",
+            "explorer.exe",
+            "powershell.exe Add-LocalGroupMember -Group Administrators -Member evil_hacker",
+        );
+        assert!(res_ps.is_some());
+        let (cat_ps, mitre_ps, _, _, _) = res_ps.unwrap();
+        assert_eq!(cat_ps, "PowerShell ile Yönetici Grubu Manipülasyonu");
+        assert_eq!(mitre_ps, "T1098.007");
+    }
+
+    #[test]
+    fn test_sc_create_kernel_byovd() {
+        let res = LolbasHunter::inspect_process(
+            "sc.exe",
+            "cmd.exe",
+            "sc.exe create evil_driver binPath= C:\\Windows\\Temp\\mhyprot2.sys type= kernel",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Zafiyetli Çekirdek Sürücüsü Servis Kaydı (BYOVD)");
+        assert_eq!(mitre, "T1068");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_ntdsutil_ad_dump() {
+        let res = LolbasHunter::inspect_process(
+            "ntdsutil.exe",
+            "cmd.exe",
+            "ntdsutil.exe \"ac i ntds\" \"ifm\" \"create full C:\\temp\\ad\" q q",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Active Directory Veritabanı ve NTDS Dökümü (Kimlik Hırsızlığı)");
+        assert_eq!(mitre, "T1003.003");
+        assert_eq!(sev, "Critical");
+    }
+
+    #[test]
+    fn test_netsh_portproxy_c2() {
+        let res = LolbasHunter::inspect_process(
+            "netsh.exe",
+            "cmd.exe",
+            "netsh interface portproxy add v4tov4 listenport=4444 listenaddress=0.0.0.0 connectport=443 connectaddress=198.51.100.1",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Netsh ile Gizli Port Yönlendirme ve C2 Tünelleme");
+        assert_eq!(mitre, "T1090.001");
+        assert_eq!(sev, "High");
+    }
+
+    #[test]
+    fn test_nltest_domain_trust_discovery() {
+        let res = LolbasHunter::inspect_process(
+            "nltest.exe",
+            "cmd.exe",
+            "nltest.exe /domain_trusts /all_trusts",
+        );
+        assert!(res.is_some());
+        let (cat, mitre, sev, _, _) = res.unwrap();
+        assert_eq!(cat, "Etki Alanı Güven İlişkileri Keşfi (Domain Trust Discovery)");
+        assert_eq!(mitre, "T1482");
+        assert_eq!(sev, "High");
+    }
 }
+
+

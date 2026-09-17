@@ -1,2 +1,5 @@
 pub mod server;
-pub use server::{start_web_ui, AppState};
+pub mod tray;
+pub use server::{launch_desktop_app_window, start_web_ui, AppState};
+pub use tray::run_system_tray;
+

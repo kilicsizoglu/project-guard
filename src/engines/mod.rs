@@ -39,8 +39,41 @@ pub use process_scanner::{ProcessScanner, ProcessThreatReport};
 pub use script_hunter::{ScriptHunter, ScriptThreatReport};
 pub use trait_engine::{FileHashes, ScanEngine, Severity, ThreatDetection};
 pub use usb_guard::{UsbDriveScanReport, UsbGuard, UsbThreatItem};
-pub use yara_engine::YaraEngine;pub mod eventlog_hunter;
+pub use win_api::{create_hidden_command, CREATE_NO_WINDOW};
+pub use yara_engine::YaraEngine;
+pub mod eventlog_hunter;
 pub mod pe_triager;
 
 pub use eventlog_hunter::{EventLogHunter, EventLogRecord};
 pub use pe_triager::{MitreCapability, PeTriageReport, PeTriager, SectionEntropyInfo};
+
+pub mod cisa_kev;
+pub use cisa_kev::{CisaKevEngine, CisaKevEntry, KevAuditReport};
+
+pub mod windows_shell;
+pub use windows_shell::WindowsShellManager;
+
+pub mod stealer_hunter;
+pub use stealer_hunter::{StealerHunter, StealerScanReport, StealerThreatFinding};
+
+pub mod cis_audit;
+pub use cis_audit::{CisAuditEngine, CisAuditReport, CisCheckItem};
+
+pub mod supply_chain;
+pub use supply_chain::{SupplyChainReport, SupplyChainScanner, SupplyChainThreat};
+
+pub mod epss_engine;
+pub use epss_engine::{EpssEngine, EpssLookupReport};
+
+pub mod sigma_engine;
+pub use sigma_engine::{SigmaDetection, SigmaEngine, SigmaRule, SigmaScanReport};
+
+pub mod stalkerware_hunter;
+pub use stalkerware_hunter::{StalkerwareHunter, StalkerwareReport, StalkerwareThreatFinding};
+
+pub mod privacy_guard;
+pub use privacy_guard::{DeviceType, PrivacyAccessRecord, PrivacyAuditReport, PrivacyGuard};
+
+pub mod system_mode;
+pub use system_mode::{ModeBackup, SystemMode, SystemModeEngine};
+

@@ -1,5 +1,37 @@
-/target
+# Rust & Cargo Build Artifacts
+/target/
+*.pdb
+*.rs.bk
+
+# Project Guard Local Data & Runtime State
 .project_guard/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
 *.log
 scan_report*.html
+
+# Build, Installer & Release Outputs
 dist/
+Output/
+*.zip
+extensions/**/*.zip
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# IDE & OS Artifacts
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store

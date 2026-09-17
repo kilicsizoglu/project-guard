@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Guard Web Shield</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-box">
+          <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="title-group">
+          <h1>PROJECT GUARD</h1>
+          <span class="subtitle">Next-Gen Web Shield & EDR</span>
+        </div>
+      </div>
+      <div class="daemon-badge" id="daemon-badge">
+        <span class="pulse-dot"></span>
+        <span id="daemon-text">EDR BAĞLANIYOR</span>
+      </div>
+    </header>
+
+    <!-- Main Shield Status Card -->
+    <section class="status-card" id="status-card">
+      <div class="status-info">
+        <div class="shield-state" id="shield-state">KALKAN AKTİF</div>
+        <div class="shield-desc" id="shield-desc">Web trafiği ve C2 bağlantıları izleniyor</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-shield" checked>
+        <span class="slider"></span>
+      </label>
+    </section>
+
+    <!-- Metrics Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value" id="blocked-count">0</span>
+        <span class="stat-label">Engellenen Tehdit</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="scanned-count">0</span>
+        <span class="stat-label">Taranan Sayfa</span>
+      </div>
+    </section>
+
+    <!-- Recent Threat Banner (Dynamic) -->
+    <section class="threat-card hidden" id="threat-card">
+      <div class="threat-header">
+        <span class="threat-tag">SON TEHDİT</span>
+        <span class="threat-time" id="threat-time">--:--</span>
+      </div>
+      <div class="threat-target" id="threat-target">example-malware.com</div>
+      <div class="threat-reason" id="threat-reason">Zararlı C2 bağlantısı engellendi</div>
+    </section>
+
+    <!-- Action Buttons -->
+    <footer class="actions">
+      <button class="btn btn-primary" id="open-soc-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        Masaüstü SOC Konsolunu Aç
+      </button>
+      <button class="btn btn-secondary" id="sync-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+        </svg>
+        Durumu Yenile
+      </button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use md5::{Digest as Md5Digest, Md5};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest as Sha256Digest, Sha256};
+use sha2::Sha256;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
@@ -29,11 +29,17 @@ impl DriverHunter {
         // Driver Name -> (CVE, Severity, Açıklama)
         let mut m = HashMap::new();
         m.insert("gdrv.sys", ("CVE-2018-19320", "Critical", "Gigabyte kernel sürücüsü. Ring0 rastgele bellek okuma/yazma ve EDR sonlandırma yeteneği."));
-        m.insert("mhyprot2.sys", ("N/A (Genshin Anti-Cheat)", "Critical", "Ransomware (LockBit) tarafından antivirüsleri devre dışı bırakmak için kullanılan imzalı sürücü."));
+        m.insert("mhyprot2.sys", ("N/A (Genshin Anti-Cheat)", "Critical", "Siber saldırganlar tarafından antivirüsleri devre dışı bırakmak için kullanılan imzalı sürücü."));
         m.insert("dbutil_2_3.sys", ("CVE-2021-21551", "Critical", "Dell firmware update sürücüsü. Yetki yükseltme ve çekirdek seviyesi arbitrer kod yürütme."));
         m.insert("rtcore64.sys", ("CVE-2019-16098", "Critical", "MSI Afterburner çekirdek sürücüsü. Korumalı süreçleri ve antivirüsleri bellekten silme açığı."));
+        m.insert("zam64.sys", ("CVE-2021-31728 / AuKill", "Critical", "Zemana AntiMalware zafiyetli çekirdek sürücüsü. AuKill ve BlackCat fidye yazılımlarınca EDR/AV öldürmek için kullanılır."));
+        m.insert("zam32.sys", ("CVE-2021-31728 / AuKill", "Critical", "Zemana AntiMalware 32-bit sürücüsü. Ring0 arbitrer süreç sonlandırma."));
+        m.insert("truesight.sys", ("Landesk / Ivanti Abuse", "Critical", "Ivanti / Landesk TrueSight sürücüsü. EDR-Kill ve yetki yükseltme saldırılarında süreç sonlandırma için suistimal edilir."));
+        m.insert("terminator.sys", ("Spyboy Terminator Abuse", "Critical", "Siber suç forumlarında satılan ve 24'ten fazla EDR/AV'yi çekirdek seviyesinde öldüren sürücü."));
+        m.insert("edrkillshifter.sys", ("Sophos / EDRKillShifter", "Critical", "EDR ve güvenlik servislerini çekirdek düzeyinde yok etmek için silah haline getirilmiş BYOVD yükleyici."));
         m.insert("procexp.sys", ("Sysinternals Abuse", "High", "Process Explorer sürücüsü. Kötü amaçlı yazılımlar tarafından güvenlik servislerini öldürmek için suistimal edilir."));
         m.insert("procexp152.sys", ("Sysinternals Abuse", "High", "Process Explorer 15.2 sürücüsü. Arbitrer süreç sonlandırma istismarı."));
+        m.insert("procexp170.sys", ("Sysinternals Abuse", "High", "Process Explorer 17.0 sürücüsü. Arbitrer süreç sonlandırma istismarı."));
         m.insert("asiodrv.sys", ("CVE-2020-12928", "High", "ASUS ASUSTeK Winbond Hardware Doctor sürücüsü. Yetki yükseltme açığı."));
         m.insert("kprocesshacker.sys", ("ProcessHacker Abuse", "High", "Process Hacker çekirdek sürücüsü. Antivirüs korumalı süreçleri sonlandırmak için kullanılır."));
         m.insert("cpuz141.sys", ("CVE-2017-15303", "High", "CPU-Z sürücüsü. Çekirdek bellek manipülasyonu açığı."));
@@ -44,6 +50,7 @@ impl DriverHunter {
         m.insert("iqvw64e.sys", ("CVE-2015-2291", "Critical", "Intel Network Adapter Diagnostics sürücüsü. Çekirdek bellek bozma açığı."));
         m.insert("speedfan.sys", ("CVE-2007-5633", "High", "SpeedFan sıcaklık sürücüsü. Arbitrer bellek erişim istismarı."));
         m.insert("amifldrv64.sys", ("AMI Flasher Abuse", "High", "AMI BIOS güncelleme sürücüsü. Arbitrer fiziksel adres yazma."));
+        m.insert("pcdsrvc_x64.sys", ("CVE-2022-24355", "High", "PC-Doctor çekirdek sürücüsü. Arbitrer Ring0 bellek yazma ve güvenlik bypassı."));
         m
     }
 
@@ -52,10 +59,14 @@ impl DriverHunter {
         let mut m = HashMap::new();
         // Hash -> (DriverName, CVE, Açıklama)
         m.insert("32f34aab87f6cac866307a14297155681648a5609e7345869f8b8860e4cb47f5", ("gdrv.sys", "CVE-2018-19320", "Gigabyte Vulnerable Driver"));
+        m.insert("8e61280a56245037d03cb4787a7ae89d1b0928e46eb5ef202a0a2df331002cf7", ("gdrv.sys", "CVE-2018-19320", "Gigabyte Secondary Hash"));
         m.insert("0296e2ce999e67c76352613a718e11516fe1b0efc3ffdb8918fc999dd76a73a5", ("dbutil_2_3.sys", "CVE-2021-21551", "Dell Vulnerable Driver"));
         m.insert("046e1bcdf2b3c38bd373884215372938f222d543c15f048d54724116e6428e3d", ("mhyprot2.sys", "Ransomware Weaponized", "Genshin Anti-Cheat BYOVD"));
         m.insert("012781423719ff8b438257008cfc2b7405c12330b62b76fcad4eb7c5690b9b32", ("rtcore64.sys", "CVE-2019-16098", "MSI Afterburner Driver"));
         m.insert("b467cb54c5b369528646b5a324cae42ff3d22e0325b7b6294eb84e56598c19a9", ("iqvw64e.sys", "CVE-2015-2291", "Intel Diagnostics Driver"));
+        m.insert("2b6369c0d3811802cb06da62a8069d2757ec9823f368e7d2ce893b82759e51ea", ("zam64.sys", "CVE-2021-31728 / AuKill", "Zemana AntiMalware Vulnerable Driver"));
+        m.insert("3513b632fa55490a6f44d6db874efbe6acff5c5e8fa2981504cfcf847d0e82c5", ("truesight.sys", "Landesk EDR-Kill Abuse", "Ivanti Landesk TrueSight Driver"));
+        m.insert("4ba4d34789d233ac8a9ccae0a7b51b32d2077e3870bb77732284c8a821e25e93", ("terminator.sys", "Terminator BYOVD", "Spyboy Terminator EDR Killer"));
         m
     }
 
@@ -212,7 +223,7 @@ mod tests {
 
     #[test]
     fn test_known_gdrv_by_name() {
-        let dummy_path = Path::new(r"C:\test\gdrv.sys");
+        let _dummy_path = Path::new(r"C:\test\gdrv.sys");
         // İsim kontrolü
         let names = DriverHunter::get_curated_loldrivers();
         assert!(names.contains_key("gdrv.sys"));
@@ -235,5 +246,19 @@ mod tests {
         let (name, cve, _) = hashes.get(hash).unwrap();
         assert_eq!(*name, "gdrv.sys");
         assert_eq!(*cve, "CVE-2018-19320");
+    }
+
+    #[test]
+    fn test_2026_byovd_additions() {
+        let names = DriverHunter::get_curated_loldrivers();
+        assert!(names.contains_key("zam64.sys"));
+        assert!(names.contains_key("truesight.sys"));
+        assert!(names.contains_key("terminator.sys"));
+        assert!(names.contains_key("edrkillshifter.sys"));
+
+        let hashes = DriverHunter::get_known_loldriver_hashes();
+        assert!(hashes.contains_key("2b6369c0d3811802cb06da62a8069d2757ec9823f368e7d2ce893b82759e51ea"));
+        assert!(hashes.contains_key("3513b632fa55490a6f44d6db874efbe6acff5c5e8fa2981504cfcf847d0e82c5"));
+        assert!(hashes.contains_key("4ba4d34789d233ac8a9ccae0a7b51b32d2077e3870bb77732284c8a821e25e93"));
     }
 }

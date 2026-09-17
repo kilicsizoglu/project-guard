@@ -80,6 +80,15 @@ impl DbStore {
                 source TEXT NOT NULL,
                 added_at TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS usom_iocs (
+                indicator TEXT PRIMARY KEY,
+                indicator_type TEXT NOT NULL,
+                threat_category TEXT NOT NULL,
+                source TEXT NOT NULL,
+                criticality TEXT NOT NULL,
+                added_at TEXT NOT NULL
+            );
             "#,
         )?;
         Ok(())
@@ -102,33 +111,10 @@ impl DbStore {
             "builtin",
             &now,
         )?;
-        // WannaCry Ransomware SHA256 bilinen hash örneği
-        self.add_signature_if_missing(
-            "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa",
-            "sha256",
-            "Ransom.WannaCry.WanaCrypt0r",
-            "MalwareBazaar",
-            &now,
-        )?;
-        // Emotet Dropper SHA256 bilinen hash örneği
-        self.add_signature_if_missing(
-            "34200632a67e6cda710928e46dd70c65ba992764de3916298dd9e944ef71fbcf",
-            "sha256",
-            "Trojan.Emotet.Dropper",
-            "MalwareBazaar",
-            &now,
-        )?;
-        // LockBit Ransomware SHA256 örneği
-        self.add_signature_if_missing(
-            "d9b897914619ee65b706c64188b2a59a7f3ec3dfb5cfeb3709b1f09c6691456d",
-            "sha256",
-            "Ransom.LockBit3",
-            "MalwareBazaar",
-            &now,
-        )?;
 
         Ok(())
     }
+
 
     fn add_signature_if_missing(
         &self,
@@ -411,5 +397,44 @@ impl DbStore {
         }
         Ok(map)
     }
+
+    /// USOM zararlı bağlantı, domain ve IP göstergelerini toplu kaydeder
+    pub fn insert_usom_iocs_batch(&mut self, iocs: &[(&str, &str, &str, &str, &str)]) -> Result<usize> {
+        let now = Utc::now().to_rfc3339();
+        let tx = self.conn.transaction()?;
+        let mut count = 0;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT OR REPLACE INTO usom_iocs (indicator, indicator_type, threat_category, source, criticality, added_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            )?;
+
+            for &(indicator, ind_type, cat, src, crit) in iocs {
+                stmt.execute(params![indicator, ind_type, cat, src, crit, now])?;
+                count += 1;
+            }
+        }
+        tx.commit()?;
+        Ok(count)
+    }
+
+    /// Bir göstergenin (URL, domain, IP) USOM zararlı listesinde olup olmadığını sorgular
+    pub fn lookup_usom_indicator(&self, indicator: &str) -> Result<Option<(String, String)>> {
+        let mut stmt = self.conn.prepare("SELECT threat_category, criticality FROM usom_iocs WHERE indicator = ?1")?;
+        let mut rows = stmt.query(params![indicator])?;
+        if let Some(row) = rows.next()? {
+            let cat: String = row.get(0)?;
+            let crit: String = row.get(1)?;
+            Ok(Some((cat, crit)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Toplam USOM gösterge sayısını döndürür
+    pub fn get_usom_iocs_count(&self) -> Result<usize> {
+        let count: i64 = self.conn.query_row("SELECT count(*) FROM usom_iocs", [], |row| row.get(0))?;
+        Ok(count as usize)
+    }
 }
+
 
